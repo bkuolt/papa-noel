@@ -1,20 +1,5 @@
 local Grid = {}
 
-
-function LoadAllTiles()
-    local images = {}
-
-    local files = love.filesystem.getDirectoryItems("Tiles")
-    for index, file in ipairs(files) do
-        images[#images + 1] = love.graphics.newImage("Tiles/" .. file)
-    end
-    print("Loaded " ..#images.. " tiles")
-    return images
-end
-local images = LoadAllTiles()
-
-
-
 function createGrid(columns, rows)
     local grid = {
         columns = columns,
@@ -23,96 +8,99 @@ function createGrid(columns, rows)
     setmetatable(grid, {__index = Grid})
 
     -- create cells
-    grid.cells = {}
+    grid.tiles = {}
     for i = 0, rows do
-        grid.cells[i] = {}
+        grid.tiles[i] = {}
         for j = 0, columns do
-            grid.cells[i][j] = { index = 0 }
+            grid.tiles[i][j] = { index = 0 }
         end
     end
 
     return grid
 end
 
-function Grid:getCellDimensions()
+function Grid:getTileDimensions()
     local screenWidth, screenHeight = love.graphics.getDimensions()
     return screenWidth / self.columns, screenHeight / self.rows
 end
 
-function Grid:getCell(x, y)
-    local cellWidth, cellHeight = self:getCellDimensions()
-    local row, column = math.floor(y / cellHeight), math.floor(x / cellWidth)
-    return self.cells[row][column]
+function Grid:getTile(x, y)
+    -- TODO: handle scrolling
+    local tileWidth, tileHeight = self:getTileDimensions()
+    local row, column = math.floor(y / tileHeight), math.floor(x / tileWidth)
+    return self.tiles[row][column]
+end
+
+function Grid:setTile(x, y, image)
+    local tile = self:getTile(x, y)
+    tile.image = image 
 end
 
 function Grid:draw()
-    local cellWidth, cellHeight = self:getCellDimensions()
+    local tileWidth, tileHeight = self:getTileDimensions()
     for y = 0, self.columns do
         for x = 0, self.rows do
-            local image = images[self.cells[y][x].index]
+            local image = self.tiles[y][x].image
             if  image then
                 local imageWidth, imageHeight = image:getData():getDimensions()
-                love.graphics.draw(image, x * cellWidth, y * cellHeight, 0,
-                                   cellWidth / imageWidth, cellHeight / imageHeight)
-        
+                love.graphics.draw(image, x * tileWidth, y * tileHeight, 0,
+                                   tileWidth / imageWidth, tileHeight / imageHeight)
                -- love.graphics.rectangle("line", x * cellWidth, y * cellHeight, cellWidth, cellHeight)
             end
         end
     end
 end
 
+-- --------------------------------------------------------------
+
+function loadTiles(path)
+    assert(love.filesystem.isDirectory(path), "invalid path")
+    
+    -- ensure "/"
+    if string.sub(path, -1) ~= "/" then
+        path = path .. "/"
+    end
+
+    local images = {}
+    
+    -- load all images from the specified path 
+    local files = love.filesystem.getDirectoryItems(path)
+    for index, file in ipairs(files) do
+        images[#images + 1] = love.graphics.newImage(path .. file)
+    end
+
+    print("Loaded " ..#images.. " tiles")
+    return images
+end
 
 -- ..........................................................................
 
-local i = 0
-
-function love.onload()
-    love.window.setFullscreen(true)
-end
-
-
+local images = loadTiles("Tiles/")
 grid = createGrid(8, 8)
 
-
-
-local image = love.graphics.newImage("tundraMid.png")
-
-
-local currentImageIndex = 1
-local currentCell 
-
-local mousePosition = {}
-local selectedCell
-
-
-function updateImage(offset)
-    if offset and currentCell ~= nil then
-        if offset > 0 then currentCell.index = currentCell.index + 1 else currentCell.index = currentCell.index - 1 end
-        currentCell.index = currentCell.index % #images
-    end  
-    currentImageIndex = currentCell.index
-end
+local currentImageIndex = 1 -- the currently seleted image
 
 
 
-function updateMousePosition(x, y)
-    mousePosition.x, mousePosition.y = x, y
-    currentCell = grid:getCell(x, y)
-end
+function love.wheelmoved(x, y)
+    -- scroll current image
+    local offset = 0
+    if x > 0 then offset = 1 elseif x < 0 then offset = -1 end
+    currentImageIndex = (currentImageIndex + offset) % #images
 
-function love.wheelmoved(x, y) 
-    updateImage(x)
+    -- update tile
+    x, y = love.mouse.getPosition()
+    grid:setTile(x, y, images[currentImageIndex])
 end
 
 function love.mousemoved(x, y, dx, dy, istouch)
-    updateMousePosition(x, y)
-    updateImage(x)
+    -- (1) get Index from current cell image
+    -- (2) set current image ondex to it
+    -- (3) update image
 end
 
 function love.mousepressed(x, y, button, istouch)
-    updateMousePosition(x, y)
-    selectedCell = currentCell 
-    updateImage()
+    grid:setTile(x, y, images[currentImageIndex])
 end
 
 -- ............................................................
