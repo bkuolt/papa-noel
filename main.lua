@@ -1,15 +1,33 @@
 
 --------------------------------------------
+-- Particle
+--------------------------------------------
+local function createParticle()
+    return {
+        x = 0, y = 0,
+        size = 0,
+        lifetime = 0
+    }
+end
+
+local function createRange(min_x, max_x, min_y, max_y)
+    return {
+        min = {x = min_x, y = min_y},
+        max = {x = max_x, y = max_y}
+    }
+end
+
+--------------------------------------------
 -- ParticleSystem
 --------------------------------------------
 local ParticleSystem = {}
 
-function newParticleSystem(image, count)
+local function newParticleSystem(image, count)
     local particleSystem = {}
-    local metatable = {}
-    setmetatable(particleSystem, metatable)
+    setmetatable(particleSystem, {__index = ParticleSystem})
 
-    metatable.__index = particleSystem
+    particleSystem.particleVelocity = {x = 0, y = 0}
+    particleSystem.particleLifetime = 0
 
     -- create sprite batch
     particleSystem.spriteBatch = love.graphics.newSpriteBatch(image, count)
@@ -17,9 +35,10 @@ function newParticleSystem(image, count)
     -- create particles
     particleSystem.particles = {}
     for i = 1, count do
-        particleSystem.particles[i] = {}
+        particleSystem.particles[i] = createParticle()
     end
 
+    particleSystem.dirty = true
     return particleSystem
 end
 
@@ -53,10 +72,9 @@ end
 
 function ParticleSystem:respawParticle(particle)
     particle.lifetime = 0
-    particle.size = self.getRandomSize()
-    particle.position = self.getRandomPosition()
+    particle.size = self:getRandomSize()
+    particle.position = self:getRandomPosition()
 end
-
 
 function ParticleSystem:respaw()
     for _, particle in ipairs(self.particles) do
@@ -102,6 +120,26 @@ end
 -- Love2D Callbacks
 --------------------------------------------
 
+
+function LoadImage(filename, red, green, blue)
+    local image = love.graphics.newImage(filename)
+    
+    -- apply colorkey
+    if red and green and blue then
+        local imageData = image:getData()
+        imageData:mapPixel(
+            function (x, y, r, g, b, a)
+                a = not (red == r and blue == b and green == g)
+                return r, g, b, a
+            end
+        )        
+        imageData:refresh()
+    end
+    
+    return image
+end
+
+
 function love.load()
     -- creates a particle system with 1000 particles
     local image = love.graphics.newImage("snowflake.png")
@@ -111,7 +149,7 @@ function love.load()
 
     particleSystem:setPosition(0, width, 0, 0) -- x = [0, width], y = 0
     particleSystem:setSize(32, 10)             -- 32 pixels 
-    particleSystem:setVelocity(0, -10)         -- -10 pixels per second
+    particleSystem:setVelocity(0, 10)         -- -10 pixels per second
 end
 
 function love.update(delta)
