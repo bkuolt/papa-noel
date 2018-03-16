@@ -1,5 +1,6 @@
 ShowGrid = true -- show grid on/off
 
+
 --[[
 ----------------------------------------------------
  Grid
@@ -96,14 +97,6 @@ function Grid:scroll(offset)
     self.x = self.x + offset
 end
 
--- TODO Load/Save current session
-function SaveGrid()
-end
-
-function LoadGrid()
-end
-
--- --------------------------------------------------------------
 
 function loadTiles(path)
     assert(love.filesystem.isDirectory(path), "invalid path")
@@ -128,10 +121,10 @@ end
 -- ..........................................................................
 
 local images = loadTiles("Tiles/")
-grid = createGrid(8, 8)
 
 local currentImageIndex = 1 -- the currently seleted image
 
+-- ..........................................................................
 local function getIndexFromImage(image)
     for i = 1, #images do 
         if images[i] == image then
@@ -141,7 +134,79 @@ local function getIndexFromImage(image)
     return 0
 end
 
--- ..........................................................................
+-- --------------------------------------------------------------------------------------------------
+
+--[[
+ @brief Saves the current world so it can be restored on the next restart
+]]
+function SaveGrid()
+    assert(grid ~= nil)
+    
+    local file = io.open("world.data", "w+")
+    file:write(2, "\n")                            -- write version
+    file:write(grid.rows, " ", grid.columns, "\n") -- write world size
+    file:write(grid.x, "\n")                       -- write scroll offset
+
+     -- write tiles
+    for y = 1, grid.rows do
+        for x = 1, grid.columns do 
+            local tile = grid.tiles[y][x]
+            if tile.image ~= nil then
+                file:write(x, " ", y, " ", getIndexFromImage(tile.image), "\n")
+            end
+        end
+    end
+
+    file:close()
+    print("Saved world")
+end
+
+--[[
+ @brief Restores previously saved world
+]]
+function LoadGrid()
+    local file = io.open("world.data", "r")
+    
+    if file == nil then
+        print("No world exists to load")
+        return
+    end
+    
+    local version = file:read("*number") -- read version 
+    local rows = file:read("*number")    -- read and create world of appropriate size
+    local columns = file:read("*number")
+    local offset = file:read("*number")  -- read scroll offset
+
+    if version == nil or rows == nil or columns == nil or offset == nil then
+        return false
+    end
+
+    -- create new grid
+    grid = createGrid(columns, rows)
+    grid:scroll(offset)
+
+    -- read tiles
+    local tileCount = 0
+    while true do
+        local x = file:read("*number")
+        if x == nil then
+            break
+        end
+
+        local y = file:read("*number")
+        local imageIndex = file:read("*number")
+
+        grid.tiles[y][x].image = images[imageIndex]
+        tileCount = tileCount + 1
+    end
+
+    file:close()
+    print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
+    return true
+end
+
+-- --------------------------------------------------------------
+
 
 function love.wheelmoved(x, y)
     -- scroll current image
@@ -183,6 +248,7 @@ local keys = {}
 
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
+        SaveGrid()
         love.event.quit()            -- terminate
     elseif key == "space" then
         ShowGrid = not ShowGrid      -- toggle show grid
@@ -208,12 +274,23 @@ function love.update(delta)
         keys["right"].timestamp = love.timer.getTime()
         scrollOffset = -1
     end
-    scrollOffset = scrollOffset * 100 * delta
+    scrollOffset = scrollOffset * 300 * delta
 
     grid:scroll(scrollOffset)
 end
 
 -- ............................................................
+
+function love.load() 
+    if not LoadGrid() then 
+        grid = createGrid(8, 8)
+    end
+
+    love.window.setFullscreen(true)
+    love.window.setTitle("Papa Noel Level Editor")
+    love.graphics.setDefaultFilter("linear", "linear")
+end
+
 
 function love.conf(t)
     t.window.vsync = false
@@ -221,6 +298,6 @@ function love.conf(t)
 end
 
 function love.draw()
+    love.graphics.clear(32,32,32)
     grid:draw()
-    love.window.setTitle("Papa Noel Level Editor")
 end
