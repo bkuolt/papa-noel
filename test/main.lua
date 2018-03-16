@@ -1,3 +1,6 @@
+local ShowGrid = true
+--
+
 local Grid = {}
 
 function createGrid(columns, rows)
@@ -6,6 +9,8 @@ function createGrid(columns, rows)
         rows = rows,
     }
     setmetatable(grid, {__index = Grid})
+
+    grid.x = 0
 
     -- create cells
     grid.tiles = {}
@@ -16,6 +21,7 @@ function createGrid(columns, rows)
         end
     end
 
+    print("Created " ..rows.. "x" ..columns.. " grid")
     return grid
 end
 
@@ -36,19 +42,48 @@ function Grid:setTile(x, y, image)
     tile.image = image 
 end
 
+function Grid:drawGrid()
+    local grey = function(value) 
+        return value, value, value, 255
+    end
+
+    love.graphics.setLineWidth(1)
+    love.graphics.setColor(grey(64))
+    
+    local tileWidth, tileHeight = self:getTileDimensions()
+    for y = 0, self.columns do
+        for x = 0, self.rows do
+            love.graphics.rectangle("line", x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+        end
+    end
+end
+
 function Grid:draw()
+
+    
+    love.graphics.translate(self.x, 0)
+
+    if ShowGrid then
+        self:drawGrid()
+    end
+
+    love.graphics.setColor(255, 255, 255)
+    -- TODO handle scrolling
     local tileWidth, tileHeight = self:getTileDimensions()
     for y = 0, self.columns do
         for x = 0, self.rows do
             local image = self.tiles[y][x].image
-            if  image then
+            if image ~= nil then
                 local imageWidth, imageHeight = image:getData():getDimensions()
                 love.graphics.draw(image, x * tileWidth, y * tileHeight, 0,
                                    tileWidth / imageWidth, tileHeight / imageHeight)
-               -- love.graphics.rectangle("line", x * cellWidth, y * cellHeight, cellWidth, cellHeight)
             end
         end
     end
+end
+
+function Grid:scroll(offset)
+    self.x = self.x + offset
 end
 
 -- --------------------------------------------------------------
@@ -56,7 +91,7 @@ end
 function loadTiles(path)
     assert(love.filesystem.isDirectory(path), "invalid path")
     
-    -- ensure "/"
+    -- ensure trailing '/'
     if string.sub(path, -1) ~= "/" then
         path = path .. "/"
     end
@@ -80,12 +115,23 @@ grid = createGrid(8, 8)
 
 local currentImageIndex = 1 -- the currently seleted image
 
+local function getIndexFromImage(image)
+    for i = 1, #images do 
+        if images[i] == image then
+            return i 
+        end
+    end
+    return 0
+end
+
+-- ..........................................................................
+
 
 
 function love.wheelmoved(x, y)
     -- scroll current image
     local offset = 0
-    if x > 0 then offset = 1 elseif x < 0 then offset = -1 end
+    if y > 0 then offset = 1 elseif y < 0 then offset = -1 end
     currentImageIndex = (currentImageIndex + offset) % #images
 
     -- update tile
@@ -100,13 +146,63 @@ function love.mousemoved(x, y, dx, dy, istouch)
 end
 
 function love.mousepressed(x, y, button, istouch)
-    grid:setTile(x, y, images[currentImageIndex])
+    local image 
+
+    if button == 1 then
+        local tile = grid:getTile(x, y)
+
+        -- set the current image to the one of the current tile
+        if tile.image ~= nil then
+            currentImageIndex = getIndexFromImage(tile.image)
+            image = images[currentImageIndex]
+        end    
+    elseif button == 2 then             
+        image = nil                       -- erase current tile
+    end
+
+    grid:setTile(x, y, image)
+end
+
+--[[
+Scroll the world
+--]]
+
+-- TODO: showGrid on/off
+-- TOOD:Ö smooth scoll (keymap)
+-- TODO: close
+
+
+function love.keypressed(key, scancode, isrepeat)
+    if key == "escape" then
+        love.event.quit()
+    elseif key == "space" then
+        ShowGrid = not ShowGrid 
+    else
+        keys[key].down = true
+        keys[key].timestamp = love.timer.getTime()
+    end
+end
+
+function love.keyreleased(key)
+    keys[key].down = false
+end
+
+function love.update(delte)
+    local scrollOffset = 0
+
+    if keys["left"].down then
+        keys["left"].timestamp = love.timer.getTime()
+        scrollOffset = 1
+    elseif keys["right"].down then
+        keys["right"].timestamp = love.timer.getTime()
+        scrollOffset = 1
+    end
+    scrollOffset = scrollOffset * 10 * delta
+
+    grid:scroll(scrollOffset)
 end
 
 -- ............................................................
-
-
-
 
 function love.conf(t)
     t.window.vsync = false
