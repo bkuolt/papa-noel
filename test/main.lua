@@ -1,6 +1,9 @@
-local ShowGrid = true
---
+ShowGrid = true -- show grid on/off
 
+--[[
+----------------------------------------------------
+ Grid
+----------------------------------------------------]]
 local Grid = {}
 
 function createGrid(columns, rows)
@@ -12,7 +15,7 @@ function createGrid(columns, rows)
 
     grid.x = 0
 
-    -- create cells
+    -- create all tiles
     grid.tiles = {}
     for i = 0, rows do
         grid.tiles[i] = {}
@@ -31,15 +34,25 @@ function Grid:getTileDimensions()
 end
 
 function Grid:getTile(x, y)
-    -- TODO: handle scrolling
     local tileWidth, tileHeight = self:getTileDimensions()
-    local row, column = math.floor(y / tileHeight), math.floor(x / tileWidth)
+    local row, column = math.floor(y / tileHeight), math.floor((x - self.x) / tileWidth)
+
+    -- check if coordinates are out of bounce
+    local isOutOfBounce = row < 0 or row > self.rows or column < 0 or column > self.columns
+    if isOutOfBounce then
+        return nil
+    end
+
     return self.tiles[row][column]
 end
 
 function Grid:setTile(x, y, image)
     local tile = self:getTile(x, y)
-    tile.image = image 
+    if tile ~= nil then
+        tile.image = image 
+    else
+        -- ERROR !? 
+    end
 end
 
 function Grid:drawGrid()
@@ -59,8 +72,6 @@ function Grid:drawGrid()
 end
 
 function Grid:draw()
-
-    
     love.graphics.translate(self.x, 0)
 
     if ShowGrid then
@@ -68,7 +79,6 @@ function Grid:draw()
     end
 
     love.graphics.setColor(255, 255, 255)
-    -- TODO handle scrolling
     local tileWidth, tileHeight = self:getTileDimensions()
     for y = 0, self.columns do
         for x = 0, self.rows do
@@ -84,6 +94,13 @@ end
 
 function Grid:scroll(offset)
     self.x = self.x + offset
+end
+
+-- TODO Load/Save current session
+function SaveGrid()
+end
+
+function LoadGrid()
 end
 
 -- --------------------------------------------------------------
@@ -126,8 +143,6 @@ end
 
 -- ..........................................................................
 
-
-
 function love.wheelmoved(x, y)
     -- scroll current image
     local offset = 0
@@ -150,12 +165,10 @@ function love.mousepressed(x, y, button, istouch)
 
     if button == 1 then
         local tile = grid:getTile(x, y)
-
-        -- set the current image to the one of the current tile
-        if tile.image ~= nil then
+        if tile ~= nil and tile.image ~= nil then
             currentImageIndex = getIndexFromImage(tile.image)
             image = images[currentImageIndex]
-        end    
+        end 
     elseif button == 2 then             
         image = nil                       -- erase current tile
     end
@@ -166,17 +179,13 @@ end
 --[[
 Scroll the world
 --]]
-
--- TODO: showGrid on/off
--- TOOD:Ö smooth scoll (keymap)
--- TODO: close
 local keys = {}
 
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
-        love.event.quit()
+        love.event.quit()            -- terminate
     elseif key == "space" then
-        ShowGrid = not ShowGrid 
+        ShowGrid = not ShowGrid      -- toggle show grid
     else
         keys[key] = {}
         keys[key].down = true
@@ -211,7 +220,7 @@ function love.conf(t)
     t.window.fullscreen = true
 end
 
-
 function love.draw()
     grid:draw()
+    love.window.setTitle("Papa Noel Level Editor")
 end
