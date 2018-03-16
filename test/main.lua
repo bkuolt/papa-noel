@@ -170,7 +170,7 @@ Scroll the world
 -- TODO: showGrid on/off
 -- TOOD:Ö smooth scoll (keymap)
 -- TODO: close
-
+local keys = {}
 
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
@@ -178,26 +178,28 @@ function love.keypressed(key, scancode, isrepeat)
     elseif key == "space" then
         ShowGrid = not ShowGrid 
     else
+        keys[key] = {}
         keys[key].down = true
         keys[key].timestamp = love.timer.getTime()
     end
 end
 
 function love.keyreleased(key)
+    keys[key] = {}
     keys[key].down = false
 end
 
-function love.update(delte)
+function love.update(delta)
     local scrollOffset = 0
 
-    if keys["left"].down then
+    if keys["left"] and keys["left"].down then
         keys["left"].timestamp = love.timer.getTime()
         scrollOffset = 1
-    elseif keys["right"].down then
+    elseif keys["right"] and keys["right"].down then
         keys["right"].timestamp = love.timer.getTime()
-        scrollOffset = 1
+        scrollOffset = -1
     end
-    scrollOffset = scrollOffset * 10 * delta
+    scrollOffset = scrollOffset * 100 * delta
 
     grid:scroll(scrollOffset)
 end
