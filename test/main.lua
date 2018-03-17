@@ -3,6 +3,19 @@ ShowGrid = true -- show grid on/off
 
 --[[
 ----------------------------------------------------
+ Configure tile width and height
+----------------------------------------------------]]
+Columns = 8
+Rows = 8
+
+local screenWidth, screenHeight = love.graphics.getDimensions()
+local screenRatio = screenHeight / screenWidth
+
+TileWidth = (screenWidth / Rows) 
+TileHeight = (screenWidth / Columns) * screenRatio
+
+--[[
+----------------------------------------------------
  Grid
 ----------------------------------------------------]]
 local Grid = {}
@@ -134,15 +147,16 @@ local function getIndexFromImage(image)
     return 0
 end
 
--- --------------------------------------------------------------------------------------------------
-
 --[[
- @brief Saves the current world so it can be restored on the next restart
-]]
+----------------------------------------------------
+Saving and Restoring the world
+----------------------------------------------------]]
+GridFile = "world.data"
+
 function SaveGrid()
     assert(grid ~= nil)
     
-    local file = io.open("world.data", "w+")
+    local file = io.open(GridFile, "w+")
     file:write(2, "\n")                            -- write version
     file:write(grid.rows, " ", grid.columns, "\n") -- write world size
     file:write(grid.x, "\n")                       -- write scroll offset
@@ -161,11 +175,8 @@ function SaveGrid()
     print("Saved world")
 end
 
---[[
- @brief Restores previously saved world
-]]
 function LoadGrid()
-    local file = io.open("world.data", "r")
+    local file = io.open(GridFile, "r")
     
     if file == nil then
         print("No world exists to load")
@@ -205,9 +216,10 @@ function LoadGrid()
     return true
 end
 
--- --------------------------------------------------------------
-
-
+--[[
+----------------------------------------------------
+Mouse Callbacks
+----------------------------------------------------]]
 function love.wheelmoved(x, y)
     -- scroll current image
     local offset = 0
@@ -242,8 +254,9 @@ function love.mousepressed(x, y, button, istouch)
 end
 
 --[[
-Scroll the world
---]]
+----------------------------------------------------
+Keyboard Callbacks
+----------------------------------------------------]]
 local keys = {}
 
 function love.keypressed(key, scancode, isrepeat)
@@ -279,12 +292,27 @@ function love.update(delta)
     grid:scroll(scrollOffset)
 end
 
--- ............................................................
+-- ......................................................................................
+
+local function LoadCursor(filename)
+    local image = love.graphics.newImage(filename)
+    return love.mouse.newCursor(image:getData())
+end
+
+cursors = {}
+local function LoadCursors() 
+    cursors.click = LoadCursor("click.png")
+    cursors.point = LoadCursor("mouse.png")
+end
+LoadCursors() 
 
 function love.load() 
     if not LoadGrid() then 
-        grid = createGrid(8, 8)
+        grid = createGrid(8, 8, 16)
     end
+
+    love.mouse.setCursor(cursors.point)
+
 
     love.window.setFullscreen(true)
     love.window.setTitle("Papa Noel Level Editor")
@@ -293,7 +321,7 @@ end
 
 
 function love.conf(t)
-    t.window.vsync = false
+ --   t.window.vsync = false
     t.window.fullscreen = true
 end
 
