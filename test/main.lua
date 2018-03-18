@@ -1,5 +1,5 @@
-ShowGrid = true -- show grid on/off
-
+ShowGrid = true   -- show grid on/off
+ScrollSpeed = 500 -- in pixels/s
 
 --[[
 ----------------------------------------------------
@@ -28,6 +28,7 @@ function createGrid(columns, rows)
     setmetatable(grid, {__index = Grid})
 
     grid.x = 0
+    grid.y = 0
 
     -- create all tiles
     grid.tiles = {}
@@ -44,7 +45,7 @@ end
 
 function Grid:getTileDimensions()
     local screenWidth, screenHeight = love.graphics.getDimensions()
-    return screenWidth / self.columns, screenHeight / self.rows
+    return screenWidth / self.columns , screenHeight / self.rows
 end
 
 function Grid:getTile(x, y)
@@ -69,6 +70,10 @@ function Grid:setTile(x, y, image)
     end
 end
 
+function Grid:setBackground(image)
+    self.background = image
+end
+
 function Grid:drawGrid()
     local grey = function(value) 
         return value, value, value, 255
@@ -86,7 +91,13 @@ function Grid:drawGrid()
 end
 
 function Grid:draw()
-    love.graphics.translate(self.x, 0)
+    if self.background ~= nil then 
+        local screenWidth, screenHeight = love.graphics.getDimensions()
+        local imageWidth, imageHeight = self.background:getData():getDimensions()
+        love.graphics.draw(self.background, 0,0,0, screenWidth / imageWidth, screenHeight / imageHeight)
+    end
+
+    love.graphics.translate(self.x, self.y)
 
     if ShowGrid then
         self:drawGrid()
@@ -106,10 +117,10 @@ function Grid:draw()
     end
 end
 
-function Grid:scroll(offset)
-    self.x = self.x + offset
+function Grid:scroll(x, y)
+    self.x = self.x + x
+    self.y = self.y + y
 end
-
 
 function loadTiles(path)
     assert(love.filesystem.isDirectory(path), "invalid path")
@@ -160,6 +171,7 @@ function SaveGrid()
     file:write(2, "\n")                            -- write version
     file:write(grid.rows, " ", grid.columns, "\n") -- write world size
     file:write(grid.x, "\n")                       -- write scroll offset
+    file:write(grid.y, "\n")
 
      -- write tiles
     for y = 1, grid.rows do
@@ -186,22 +198,25 @@ function LoadGrid()
     local version = file:read("*number") -- read version 
     local rows = file:read("*number")    -- read and create world of appropriate size
     local columns = file:read("*number")
-    local offset = file:read("*number")  -- read scroll offset
+    local scrollOffset = {               -- read scroll offset
+        x = file:read("*number"),
+        y = file:read("*number")
+    }
 
-    if version == nil or rows == nil or columns == nil or offset == nil then
+    if version == nil or rows == nil or columns == nil or scrollOffset.x == nil or scrollOffset.y == nil then
         return false
     end
 
     -- create new grid
     grid = createGrid(columns, rows)
-    grid:scroll(offset)
+    grid:scroll(scrollOffset.x, scrollOffset.y)
 
     -- read tiles
     local tileCount = 0
     while true do
         local x = file:read("*number")
         if x == nil then
-            break
+            break -- no (more) tiles to read
         end
 
         local y = file:read("*number")
@@ -259,40 +274,58 @@ Keyboard Callbacks
 ----------------------------------------------------]]
 local keys = {}
 
+local function notifyKeyPress(key)
+    keys[key] = keys[key] or {}
+    keys[key].down = true
+    keys[key].timestamp = love.timer.getTime()
+end
+
+local function notifyKeyRelease(key)
+    keys[key].down = false
+end
+
+local function isPressed(key)
+    if keys[key] == nil then 
+        return false 
+    end
+    keys[key].timestamp = love.timer.getTime()
+    return keys[key].down
+end
+
 function love.keypressed(key, scancode, isrepeat)
+    notifyKeyPress(key)
+
     if key == "escape" then
         SaveGrid()
         love.event.quit()            -- terminate
     elseif key == "space" then
         ShowGrid = not ShowGrid      -- toggle show grid
-    else
-        keys[key] = {}
-        keys[key].down = true
-        keys[key].timestamp = love.timer.getTime()
     end
 end
 
 function love.keyreleased(key)
-    keys[key] = {}
-    keys[key].down = false
+    notifyKeyRelease(key)
 end
 
 function love.update(delta)
-    local scrollOffset = 0
+    local scrollOffset = { x = 0, y = 0 }
 
-    if keys["left"] and keys["left"].down then
-        keys["left"].timestamp = love.timer.getTime()
-        scrollOffset = 1
-    elseif keys["right"] and keys["right"].down then
-        keys["right"].timestamp = love.timer.getTime()
-        scrollOffset = -1
+    if isPressed("left") then
+        scrollOffset.x = ScrollSpeed * delta
+    elseif isPressed("right") then
+        scrollOffset.x = -ScrollSpeed * delta
+    elseif isPressed("up")then
+        scrollOffset.y = ScrollSpeed * delta
+    elseif isPressed("down") then
+        scrollOffset.y = -ScrollSpeed * delta
     end
-    scrollOffset = scrollOffset * 300 * delta
 
-    grid:scroll(scrollOffset)
+    grid:scroll(scrollOffset.x, scrollOffset.y)
 end
 
 -- ......................................................................................
+
+local backgroundImage = love.graphics.newImage("background.png")
 
 local function LoadCursor(filename)
     local image = love.graphics.newImage(filename)
@@ -308,8 +341,9 @@ LoadCursors()
 
 function love.load() 
     if not LoadGrid() then 
-        grid = createGrid(8, 8, 16)
+        grid = createGrid(16, 8, 16)
     end
+    grid:setBackground(backgroundImage)
 
     love.mouse.setCursor(cursors.point)
 
