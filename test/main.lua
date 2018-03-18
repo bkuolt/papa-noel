@@ -48,6 +48,11 @@ function Grid:getTileDimensions()
     return screenWidth / self.columns , screenHeight / self.rows
 end
 
+function Grid:isWithinWorld(x, y)
+    -- TODO
+end
+
+
 function Grid:getTile(x, y)
     local tileWidth, tileHeight = self:getTileDimensions()
     local row, column = math.floor(y / tileHeight), math.floor((x - self.x) / tileWidth)
@@ -65,8 +70,6 @@ function Grid:setTile(x, y, image)
     local tile = self:getTile(x, y)
     if tile ~= nil then
         tile.image = image 
-    else
-        -- ERROR !? 
     end
 end
 
@@ -90,19 +93,13 @@ function Grid:drawGrid()
     end
 end
 
-function Grid:draw()
-    if self.background ~= nil then 
-        local screenWidth, screenHeight = love.graphics.getDimensions()
-        local imageWidth, imageHeight = self.background:getData():getDimensions()
-        love.graphics.draw(self.background, 0,0,0, screenWidth / imageWidth, screenHeight / imageHeight)
-    end
+function Grid:drawBackground()
+    local screenWidth, screenHeight = love.graphics.getDimensions()
+    local imageWidth, imageHeight = self.background:getData():getDimensions()
+    love.graphics.draw(self.background, 0, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+end
 
-    love.graphics.translate(self.x, self.y)
-
-    if ShowGrid then
-        self:drawGrid()
-    end
-
+function Grid:drawTiles()
     love.graphics.setColor(255, 255, 255)
     local tileWidth, tileHeight = self:getTileDimensions()
     for y = 0, self.columns do
@@ -117,10 +114,34 @@ function Grid:draw()
     end
 end
 
+function Grid:draw()
+    if self.background then 
+        self:drawBackground()
+    end
+
+    love.graphics.translate(self.x, self.y)
+
+    if ShowGrid then
+        self:drawGrid()
+    end
+
+    self:drawTiles()
+end
+
 function Grid:scroll(x, y)
     self.x = self.x + x
     self.y = self.y + y
 end
+
+function Grid:notifyCellClick()
+    -- TODO
+end
+
+function Grid:notifyCellMouseOver()
+    -- TODO
+end
+
+-- ------------------------------------------------------------------------------------------
 
 function loadTiles(path)
     assert(love.filesystem.isDirectory(path), "invalid path")
@@ -165,7 +186,7 @@ Saving and Restoring the world
 GridFile = "world.data"
 
 function SaveGrid()
-    assert(grid ~= nil)
+    assert(grid ~= nil, "No world to save")
     
     local file = io.open(GridFile, "w+")
     file:write(2, "\n")                            -- write version
@@ -203,7 +224,9 @@ function LoadGrid()
         y = file:read("*number")
     }
 
-    if version == nil or rows == nil or columns == nil or scrollOffset.x == nil or scrollOffset.y == nil then
+    if version == nil or 
+       rows == nil or columns == nil or 
+       scrollOffset.x == nil or scrollOffset.y == nil then
         return false
     end
 
@@ -211,7 +234,7 @@ function LoadGrid()
     grid = createGrid(columns, rows)
     grid:scroll(scrollOffset.x, scrollOffset.y)
 
-    -- read tiles
+    -- read all saved tiles
     local tileCount = 0
     while true do
         local x = file:read("*number")
@@ -221,7 +244,8 @@ function LoadGrid()
 
         local y = file:read("*number")
         local imageIndex = file:read("*number")
-
+        
+        -- TODO: check if world is large enoug for tile
         grid.tiles[y][x].image = images[imageIndex]
         tileCount = tileCount + 1
     end
