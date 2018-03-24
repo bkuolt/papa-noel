@@ -5,26 +5,17 @@
 local Grid = {}
 
 function createGrid(columns, rows)
-    assert(columns ~= nil and rows ~=nil and columns > 0 and rows > 0, "Invalid grid size")
+    assert(columns ~= nil and rows ~= nil and columns > 0 and rows > 0, "Invalid grid size")
 
     local grid = {
-        columns = columns,
-        rows = rows,
+        rows = rows,       -- maximum number of rows in the grid on the screen 
+        columns = columns, -- maximum number of columns in the grid on the screen
+        position = { x = 0, y = 0 },
+        tiles = {}
     }
     setmetatable(grid, {__index = Grid})
 
-    grid.position = { x = 0, y = 0 }
-    grid.tiles = {}
-
-    -- create all tiles
-    for i = 0, rows do
-        grid.tiles[i] = {}
-        for j = 0, columns do
-            grid.tiles[i][j] = { index = 0 }
-        end
-    end
-
-    print("Created " ..rows.. "x" ..columns.. " grid")
+    print("Created " ..rows.. "x" ..columns.. " grid") -- TODO
     return grid
 end
 
@@ -33,28 +24,31 @@ function Grid:getTileDimensions()
     return screenWidth / self.columns , screenHeight / self.rows
 end
 
-function Grid:isWithin(x, y)
-    -- TODO
+function Grid:getTileIndices(x, y) 
+    local tileWidth, tileHeight = self:getTileDimensions()
+    return math.floor((x - self.position.x) / tileWidth), math.floor((y - self.position.y) / tileHeight) -- TODO
 end
 
 function Grid:getTile(x, y)
-    local tileWidth, tileHeight = self:getTileDimensions()
-    local row, column = math.floor(y / tileHeight), math.floor((x - self.position.x) / tileWidth)
+    local column, row = self:getTileIndices(x, y)
 
-    -- check if coordinates are out of bounce
-    local isOutOfBounce = row < 0 or row > self.rows or column < 0 or column > self.columns
-    if isOutOfBounce then
-        return nil
+    if self.tiles[row] == nil or self.tiles[row][column] == nil then 
+        return nil 
     end
 
     return self.tiles[row][column]
 end
 
 function Grid:setTile(x, y, image)
-    local tile = self:getTile(x, y)
-    if tile ~= nil then
-        tile.image = image 
-    end
+    local column, row = self:getTileIndices(x, y)
+    
+    self.tiles[row] = self.tiles[row] or {}
+    self.tiles[row][column] = self.tiles[row][column] or {}
+  
+    self.tiles[row][column].image = image 
+
+    print("Set ", column, "/", row, " to ", image)
+    -- TODO: delete empty tiles (tiles without images)
 end
 
 function Grid:setBackground(image)
@@ -70,11 +64,12 @@ function Grid:drawGrid()
     love.graphics.setColor(grey(64))
     
     local tileWidth, tileHeight = self:getTileDimensions()
-    for y = 0, self.columns do
-        for x = 0, self.rows do
+    for y = 0, self.rows do
+        for x = 0, self.columns do
             love.graphics.rectangle("line", x * tileWidth, y * tileHeight, tileWidth, tileHeight)
         end
     end
+    -- TODO: draw infinite grid
 end
 
 function Grid:drawBackground()
@@ -86,9 +81,10 @@ end
 function Grid:drawTiles()
     love.graphics.setColor(255, 255, 255)
     local tileWidth, tileHeight = self:getTileDimensions()
-    for y = 0, self.columns do
-        for x = 0, self.rows do
-            local image = self.tiles[y][x].image
+
+    for y, row in pairs(self.tiles) do
+        for x, _ in pairs(row) do
+            local image = row[x].image
             if image ~= nil then
                 local imageWidth, imageHeight = image:getData():getDimensions()
                 love.graphics.draw(image, x * tileWidth, y * tileHeight, 0,

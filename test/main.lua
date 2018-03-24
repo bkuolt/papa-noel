@@ -53,11 +53,12 @@ function SaveGrid()
     file:write(grid.position.y, "\n")
 
      -- write tiles
-    for y = 1, grid.rows do
-        for x = 1, grid.columns do 
+     for y, _ in pairs(grid.tiles) do
+        for x, _ in pairs(grid.tiles[y]) do
             local tile = grid.tiles[y][x]
             if tile.image ~= nil then
                 file:write(x, " ", y, " ", getIndexFromImage(tile.image), "\n")
+                print("Saved ", x, "/", y)
             end
         end
     end
@@ -71,7 +72,7 @@ function LoadGrid()
     
     if file == nil then
         print("No world exists to load")
-        return
+        return false
     end
     
     local version = file:read("*number") -- read version 
@@ -103,8 +104,8 @@ function LoadGrid()
         local y = file:read("*number")
         local imageIndex = file:read("*number")
         
-        -- TODO: check if world is large enoug for tile
-        grid.tiles[y][x].image = images[imageIndex]
+        -- TODO: check if world is large enough for tile
+        grid:setTile(x, y, images[imageIndex])
         tileCount = tileCount + 1
     end
 
@@ -123,9 +124,7 @@ function love.mousemoved(x, y, dx, dy, istouch)
         grid:scroll(dx, dy)
     else
         local tile = grid:getTile(x, y)
-        if tile == nil then
-            love.mouse.setCursor(love.mouse.getSystemCursor("arrow"))
-        elseif tile.image == nil then -- mouse over empty tile
+        if tile == nil or tile.image == nil then -- mouse over empty tile
             love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
         else -- mouse over set tile
             love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
@@ -137,7 +136,7 @@ end
 function love.mousepressed(x, y, button, istouch)
     if button == 1 then
         local tile = grid:getTile(x, y)
-        if tile ~= nil and tile.image == nil then -- left click on empty tile -> set tile
+        if tile == nil or tile.image == nil then -- left click on empty tile -> set tile
             love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
             grid:setTile(x, y, images[currentImageIndex])
         end
@@ -197,7 +196,7 @@ function love.load()
     love.graphics.setDefaultFilter("linear", "linear")
 
     if not LoadGrid() then 
-        grid = createGrid(16, 8)
+        grid = createGrid(8, 16)
     end
 
     local backgroundImage = love.graphics.newImage("background.png")
@@ -213,3 +212,5 @@ function love.draw()
     love.graphics.clear(32, 32, 32)
     grid:draw()
 end
+
+-- TODO: Print info about curent cell 
