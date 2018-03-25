@@ -15,7 +15,7 @@ function createGrid(columns, rows)
     }
     setmetatable(grid, {__index = Grid})
 
-    print("Created " ..rows.. "x" ..columns.. " grid") -- TODO
+    print("Created " ..rows.. "x" ..columns.. " grid")
     return grid
 end
 
@@ -26,7 +26,7 @@ end
 
 function Grid:getTileIndices(x, y) 
     local tileWidth, tileHeight = self:getTileDimensions()
-    return math.floor((x - self.position.x) / tileWidth), math.floor((y - self.position.y) / tileHeight) -- TODO
+    return math.floor((x - self.position.x) / tileWidth), math.floor((y - self.position.y) / tileHeight)
 end
 
 function Grid:getTile(x, y)
@@ -44,11 +44,14 @@ function Grid:setTile(x, y, image)
     
     self.tiles[row] = self.tiles[row] or {}
     self.tiles[row][column] = self.tiles[row][column] or {}
-  
     self.tiles[row][column].image = image 
-
-    print("Set ", column, "/", row, " to ", image)
     -- TODO: delete empty tiles (tiles without images)
+end
+
+function Grid:addTile(column, row, image)
+    self.tiles[row] = self.tiles[row] or {}
+    self.tiles[row][column] = {}
+    self.tiles[row][column].image = image
 end
 
 function Grid:setBackground(image)
@@ -60,16 +63,21 @@ function Grid:drawGrid()
         return value, value, value, 255
     end
 
-    love.graphics.setLineWidth(1)
-    love.graphics.setColor(grey(64))
-    
     local tileWidth, tileHeight = self:getTileDimensions()
-    for y = 0, self.rows do
-        for x = 0, self.columns do
-            love.graphics.rectangle("line", x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+
+    love.graphics.push()
+        love.graphics.setLineWidth(1)
+        love.graphics.setColor(grey(64))
+        
+        love.graphics.origin()
+        love.graphics.translate(self.position.x % tileWidth, self.position.y % tileHeight)
+
+        for y = -1, self.rows + 1 do
+            for x = -1, self.columns + 1 do
+                love.graphics.rectangle("line", x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+            end
         end
-    end
-    -- TODO: draw infinite grid
+    love.graphics.pop()
 end
 
 function Grid:drawBackground()
@@ -79,27 +87,29 @@ function Grid:drawBackground()
 end
 
 function Grid:drawTiles()
-    love.graphics.setColor(255, 255, 255)
     local tileWidth, tileHeight = self:getTileDimensions()
 
-    for y, row in pairs(self.tiles) do
-        for x, _ in pairs(row) do
-            local image = row[x].image
-            if image ~= nil then
-                local imageWidth, imageHeight = image:getData():getDimensions()
-                love.graphics.draw(image, x * tileWidth, y * tileHeight, 0,
-                                   tileWidth / imageWidth, tileHeight / imageHeight)
+    love.graphics.push()
+        love.graphics.translate(self.position.x, self.position.y)
+        love.graphics.setColor(255, 255, 255)
+
+        for y, row in pairs(self.tiles) do
+            for x, _ in pairs(row) do
+                local image = row[x].image
+                if image ~= nil then
+                    local imageWidth, imageHeight = image:getData():getDimensions()
+                    love.graphics.draw(image, x * tileWidth, y * tileHeight, 0,
+                                    tileWidth / imageWidth, tileHeight / imageHeight)
+                end
             end
         end
-    end
+    love.graphics.pop()
 end
 
 function Grid:draw()
     if self.background then 
         self:drawBackground()
     end
-
-    love.graphics.translate(self.position.x, self.position.y)
 
     if ShowGrid then
         self:drawGrid()

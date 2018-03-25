@@ -2,8 +2,11 @@ ShowGrid = true   -- show grid on/off
 ScrollSpeed = 500 -- in pixels/s
 
 Grid = require("Grid")
+require("SaveGame")
 
--- -----------------------------------------------------------------------------------------
+local currentImageIndex = 1         -- the currently seleted image
+local currentCell = {x = 0, y = 0}
+local images = {}
 
 local function loadTiles(path)
     assert(love.filesystem.isDirectory(path), "invalid path")
@@ -13,8 +16,6 @@ local function loadTiles(path)
         path = path .. "/"
     end
 
-    local images = {}
-    
     -- load all images from the specified path 
     local files = love.filesystem.getDirectoryItems(path)
     for index, file in ipairs(files) do
@@ -22,96 +23,11 @@ local function loadTiles(path)
     end
 
     print("Loaded " ..#images.. " tiles")
-    return images
 end
 
-local images = loadTiles("Tiles/")
-local currentImageIndex = 1 -- the currently seleted image
-
-local function getIndexFromImage(image)
-    for i = 1, #images do 
-        if images[i] == image then
-            return i 
-        end
-    end
-    return 0
-end
-
---[[
-----------------------------------------------------
-Saving and Restoring the world
-----------------------------------------------------]]
-GridFile = "world.data"
-
-function SaveGrid()
-    assert(grid ~= nil, "No world to save")
-    
-    local file = io.open(GridFile, "w+")
-    file:write(2, "\n")                            -- write version
-    file:write(grid.rows, " ", grid.columns, "\n") -- write world size
-    file:write(grid.position.x, "\n")              -- write scroll offset
-    file:write(grid.position.y, "\n")
-
-     -- write tiles
-     for y, _ in pairs(grid.tiles) do
-        for x, _ in pairs(grid.tiles[y]) do
-            local tile = grid.tiles[y][x]
-            if tile.image ~= nil then
-                file:write(x, " ", y, " ", getIndexFromImage(tile.image), "\n")
-                print("Saved ", x, "/", y)
-            end
-        end
-    end
-
-    file:close()
-    print("Saved world")
-end
-
-function LoadGrid()
-    local file = io.open(GridFile, "r")
-    
-    if file == nil then
-        print("No world exists to load")
-        return false
-    end
-    
-    local version = file:read("*number") -- read version 
-    local rows = file:read("*number")    -- read and create world of appropriate size
-    local columns = file:read("*number")
-    local scrollOffset = {               -- read scroll offset
-        x = file:read("*number"),
-        y = file:read("*number")
-    }
-
-    if version == nil or 
-       rows == nil or columns == nil or 
-       scrollOffset.x == nil or scrollOffset.y == nil then
-        return false
-    end
-
-    -- create new grid
-    grid = createGrid(columns, rows)
-    grid:scroll(scrollOffset.x, scrollOffset.y)
-
-    -- read all saved tiles
-    local tileCount = 0
-    while true do
-        local x = file:read("*number")
-        if x == nil then
-            break -- no (more) tiles to read
-        end
-
-        local y = file:read("*number")
-        local imageIndex = file:read("*number")
-        
-        -- TODO: check if world is large enough for tile
-        grid:setTile(x, y, images[imageIndex])
-        tileCount = tileCount + 1
-    end
-
-    file:close()
-    print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
-    return true
+local function scrollCurrentImage(offset)
+    currentImageIndex = (currentImageIndex + offset) % (1 + #images) -- TODO
+    print(offset)
 end
 
 --[[
@@ -119,6 +35,8 @@ end
 Mouse Callbacks
 ----------------------------------------------------]]
 function love.mousemoved(x, y, dx, dy, istouch)
+    currentCell.x, currentCell.y = grid:getTileIndices(x,y) -- TODO
+    
     if love.mouse.isDown(1) then -- left mouse button pressed and mouse moved
         love.mouse.setCursor(love.mouse.getSystemCursor("crosshair"))
         grid:scroll(dx, dy)
@@ -128,18 +46,23 @@ function love.mousemoved(x, y, dx, dy, istouch)
             love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
         else -- mouse over set tile
             love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
-            currentImageIndex = getIndexFromImage(tile.image)
+            currentImageIndex = GetIndexFromImage(images, tile.image)
         end
     end
 end
 
 function love.mousepressed(x, y, button, istouch)
-    if button == 1 then
+    if button == 1 then -- left click on tile
         local tile = grid:getTile(x, y)
-        if tile == nil or tile.image == nil then -- left click on empty tile -> set tile
-            love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
-            grid:setTile(x, y, images[currentImageIndex])
+        
+        love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
+
+        if tile ~= nil and tile.image ~= nil then
+            scrollCurrentImage(1)
+            print("sd")
         end
+
+        grid:setTile(x, y, images[currentImageIndex])
     elseif button == 2 then -- right click on set tile -> eras tile
         love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
         grid:setTile(x, y, nil)
@@ -147,11 +70,10 @@ function love.mousepressed(x, y, button, istouch)
 end
 
 function love.wheelmoved(x, y)
-    -- scroll current image
-    currentImageIndex = (currentImageIndex + y) % #images
+    scrollCurrentImage(y)
 
     -- update tile image
-    x, y = love.mouse.getPosition()
+    local x, y = love.mouse.getPosition()
     grid:setTile(x, y, images[currentImageIndex])
 end
 
@@ -161,7 +83,7 @@ Keyboard Callbacks
 ----------------------------------------------------]]
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
-        SaveGrid()
+        SaveGrid(images)
         love.event.quit()       -- terminate
     elseif key == "space" then
         ShowGrid = not ShowGrid -- toggle grid visibility
@@ -195,8 +117,10 @@ function love.load()
     love.window.setTitle("Papa Noel Level Editor")
     love.graphics.setDefaultFilter("linear", "linear")
 
-    if not LoadGrid() then 
-        grid = createGrid(8, 16)
+    loadTiles("Tiles/")
+
+    if not LoadGrid(images) then 
+         grid = createGrid(16, 8)
     end
 
     local backgroundImage = love.graphics.newImage("background.png")
@@ -211,6 +135,7 @@ end
 function love.draw()
     love.graphics.clear(32, 32, 32)
     grid:draw()
-end
 
--- TODO: Print info about curent cell 
+    local text = string.format("Tile %d/%d",currentCell.x, currentCell.y)
+    love.graphics.print(text,0,0)
+end
