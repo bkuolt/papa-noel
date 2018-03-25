@@ -1,3 +1,5 @@
+config = require("config")
+
 --[[
 ----------------------------------------------------
  Grid
@@ -11,6 +13,7 @@ function createGrid(columns, rows)
         rows = rows,       -- maximum number of rows in the grid on the screen 
         columns = columns, -- maximum number of columns in the grid on the screen
         position = { x = 0, y = 0 },
+        backgroundScroll = { x = 0, y = 0 },
         tiles = {}
     }
     setmetatable(grid, {__index = Grid})
@@ -80,10 +83,26 @@ function Grid:drawGrid()
     love.graphics.pop()
 end
 
+time = love.timer.getTime()
+
+
+function Grid:scrollBackground(offset)
+    self.backgroundScroll.x = self.backgroundScroll.x + offset
+end
+
 function Grid:drawBackground()
     local screenWidth, screenHeight = love.graphics.getDimensions()
     local imageWidth, imageHeight = self.background:getData():getDimensions()
-    love.graphics.draw(self.background, 0, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+    
+    love.graphics.push()
+        local translation = self.backgroundScroll.x % screenWidth
+
+        love.graphics.draw(self.background,  translation, 0, 0,  screenWidth / imageWidth, screenHeight / imageHeight)
+        love.graphics.draw(self.background,  translation + screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+        love.graphics.draw(self.background,  translation - screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+        
+    love.graphics.pop()
+
 end
 
 function Grid:drawTiles()
@@ -111,7 +130,7 @@ function Grid:draw()
         self:drawBackground()
     end
 
-    if ShowGrid then
+    if config.ShowGrid then
         self:drawGrid()
     end
 
@@ -121,6 +140,8 @@ end
 function Grid:scroll(x, y)
     self.position.x = self.position.x + x
     self.position.y = self.position.y + y
+
+    self:scrollBackground(x / 2)
 end
 
 return Grid

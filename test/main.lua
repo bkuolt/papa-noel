@@ -1,6 +1,4 @@
-ShowGrid = true   -- show grid on/off
-ScrollSpeed = 500 -- in pixels/s
-
+config = require("config")
 Grid = require("Grid")
 require("SaveGame")
 
@@ -26,8 +24,7 @@ local function loadTiles(path)
 end
 
 local function scrollCurrentImage(offset)
-    currentImageIndex = (currentImageIndex + offset) % (1 + #images) -- TODO
-    print(offset)
+    currentImageIndex = (currentImageIndex + offset) % (1 + #images)
 end
 
 --[[
@@ -35,9 +32,9 @@ end
 Mouse Callbacks
 ----------------------------------------------------]]
 function love.mousemoved(x, y, dx, dy, istouch)
-    currentCell.x, currentCell.y = grid:getTileIndices(x,y) -- TODO
-    
-    if love.mouse.isDown(1) then -- left mouse button pressed and mouse moved
+    currentCell.x, currentCell.y = grid:getTileIndices(x,y)
+
+    if love.mouse.isDown(2) then -- left mouse button pressed and mouse moved
         love.mouse.setCursor(love.mouse.getSystemCursor("crosshair"))
         grid:scroll(dx, dy)
     else
@@ -59,7 +56,6 @@ function love.mousepressed(x, y, button, istouch)
 
         if tile ~= nil and tile.image ~= nil then
             scrollCurrentImage(1)
-            print("sd")
         end
 
         grid:setTile(x, y, images[currentImageIndex])
@@ -86,7 +82,7 @@ function love.keypressed(key, scancode, isrepeat)
         SaveGrid(images)
         love.event.quit()       -- terminate
     elseif key == "space" then
-        ShowGrid = not ShowGrid -- toggle grid visibility
+        config.ShowGrid = not config.ShowGrid -- toggle grid visibility
     end
 end
 
@@ -94,14 +90,14 @@ function love.update(delta)
     local scrollOffset = { x = 0, y = 0 }
 
     if love.keyboard.isDown("left") then
-        scrollOffset.x = ScrollSpeed * delta
+        scrollOffset.x = config.ScrollSpeed * delta
     elseif love.keyboard.isDown("right") then
-        scrollOffset.x = -ScrollSpeed * delta
+        scrollOffset.x = -config.ScrollSpeed * delta
     end
     if love.keyboard.isDown("up")then
-        scrollOffset.y = ScrollSpeed * delta
+        scrollOffset.y = config.ScrollSpeed * delta
     elseif love.keyboard.isDown("down") then
-        scrollOffset.y = -ScrollSpeed * delta
+        scrollOffset.y = -config.ScrollSpeed * delta
     end
 
     -- TODO: update mouse cursor when moving

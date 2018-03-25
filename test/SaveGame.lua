@@ -1,3 +1,5 @@
+config = require("config")
+
 function GetIndexFromImage(images, image)
     for i = 1, #images do 
         if images[i] == image then
@@ -5,6 +7,16 @@ function GetIndexFromImage(images, image)
         end
     end
     return 0
+end
+
+local function boolToNumber(value)
+    if value == true then return 1 end
+    return 0
+end
+
+local function numberToBool(number)
+    if number > 0 then return true end
+    return false
 end
 
 --[[
@@ -20,7 +32,8 @@ function SaveGrid(images)
     file:write(2, "\n")                            -- write version
     file:write(grid.rows, " ", grid.columns, "\n") -- write world size
     file:write(grid.position.x, "\n")              -- write scroll offset
-    file:write(grid.position.y, "\n")
+    file:write(grid.position.y, "\n") 
+    file:write(boolToNumber(config.ShowGrid), "\n")       -- write grid visibility  
 
      -- write tiles
      for y, _ in pairs(grid.tiles) do
@@ -52,6 +65,8 @@ function LoadGrid(images)
         y = file:read("*number")
     }
 
+    config.ShowGrid = numberToBool(file:read("*number"))      -- read grid visbility
+
     if version == nil or 
        rows == nil or columns == nil or 
        scrollOffset.x == nil or scrollOffset.y == nil then
@@ -72,7 +87,7 @@ function LoadGrid(images)
 
         local y = file:read("*number")
         local imageIndex = file:read("*number")
-        print ("Laoded ", x ,"/", y)
+
         -- TODO: check if world is large enough for tile
         grid:addTile(x, y, images[imageIndex])
         tileCount = tileCount + 1
