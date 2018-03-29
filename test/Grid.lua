@@ -1,4 +1,4 @@
-config = require("config")
+config = require("conf")
 
 --[[
 ----------------------------------------------------
@@ -126,9 +126,9 @@ function Grid:drawTiles()
 end
 
 function Grid:draw()
-    if self.background then 
-        self:drawBackground()
-    end
+    --if self.background then 
+      --  self:drawBackground()
+    --end
 
     if config.ShowGrid then
         self:drawGrid()

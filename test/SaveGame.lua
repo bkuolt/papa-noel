@@ -1,4 +1,4 @@
-config = require("config")
+config = require("conf")
 
 function GetIndexFromImage(images, image)
     for i = 1, #images do 
@@ -24,6 +24,7 @@ end
 Saving and Restoring the world
 ----------------------------------------------------]]
 GridFile = "world.data"
+
 
 function SaveGrid(images)
     assert(grid ~= nil, "No world to save")

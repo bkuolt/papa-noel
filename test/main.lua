@@ -1,4 +1,4 @@
-config = require("config")
+config = require("conf")
 Grid = require("Grid")
 require("SaveGame")
 
@@ -86,23 +86,62 @@ function love.keypressed(key, scancode, isrepeat)
     end
 end
 
-function love.update(delta)
-    local scrollOffset = { x = 0, y = 0 }
+-- --------------------------------
+local ParticleSystem = {}
 
-    if love.keyboard.isDown("left") then
-        scrollOffset.x = config.ScrollSpeed * delta
-    elseif love.keyboard.isDown("right") then
-        scrollOffset.x = -config.ScrollSpeed * delta
-    end
-    if love.keyboard.isDown("up")then
-        scrollOffset.y = config.ScrollSpeed * delta
-    elseif love.keyboard.isDown("down") then
-        scrollOffset.y = -config.ScrollSpeed * delta
+function createParticleSystem(particleCount, image, particleSize)
+    local particleSystem = {}
+    setmetatable(particleSystem, {__index = ParticleSystem})
+
+    particleSystem.image = image 
+    particleSystem.particleSize = particleSize
+    particleSystem.particles = {}
+    
+    for i = 1, particleCount do 
+        particleSystem.particles[i] = particleSystem:createParticle()
     end
 
-    -- TODO: update mouse cursor when moving
-    grid:scroll(scrollOffset.x, scrollOffset.y)
+    return particleSystem
 end
+
+function ParticleSystem:createParticle(existingParticle)
+    local particle = existingParticle or {}
+    
+    particle.x = math.random(0, love.graphics.getWidth())
+    particle.y = 0 -- TODO
+
+    particle.gravity = math.random(100,300) -- TODO
+
+    return particle
+end
+
+function ParticleSystem:update(delta)
+
+    for _, particle in pairs(self.particles) do 
+        particle.y = particle.y + particle.gravity * delta
+        particle.x = particle.x + math.random(-20,20) * delta
+
+        if particle.y >= love.graphics:getHeight() then
+            self:createParticle(particle)
+        end
+
+    end
+end
+
+function ParticleSystem:draw()
+    local scale = {
+        x = self.particleSize / self.image:getData():getWidth(),
+        y = self.particleSize / self.image:getData():getHeight()
+    }
+
+    love.graphics.setColor(255,255,255)
+    for _, particle in pairs(self.particles) do 
+        love.graphics.draw(self.image, particle.x, particle.y, 0, scale.x, scale.y)
+    end
+
+    -- TODO
+end
+
 
 --[[
 ----------------------------------------------------
@@ -120,18 +159,43 @@ function love.load()
     end
 
     local backgroundImage = love.graphics.newImage("background.png")
+
+    particleSystem = createParticleSystem(1000, love.graphics.newImage("a.png") ,16)
+
     grid:setBackground(backgroundImage)
 end
 
-function love.conf(t)
-    t.window.vsync = false
-    t.window.fullscreen = true
+function love.update(delta)
+    local scrollOffset = { x = 0, y = 0 }
+
+    if love.keyboard.isDown("left") then
+        scrollOffset.x = config.ScrollSpeed * delta
+    elseif love.keyboard.isDown("right") then
+        scrollOffset.x = -config.ScrollSpeed * delta
+    end
+    if love.keyboard.isDown("up")then
+        scrollOffset.y = config.ScrollSpeed * delta
+    elseif love.keyboard.isDown("down") then
+        scrollOffset.y = -config.ScrollSpeed * delta
+    end
+
+    -- TODO: update mouse cursor when moving
+    grid:scroll(scrollOffset.x, scrollOffset.y)
+
+    particleSystem:update(delta)
 end
+
 
 function love.draw()
     love.graphics.clear(32, 32, 32)
+ 
+    grid:drawBackground()
+    
+    particleSystem:draw()
+    
     grid:draw()
 
-    local text = string.format("Tile %d/%d",currentCell.x, currentCell.y)
+ 
+    local text = string.format("Tile %d/%d | %d FPS",currentCell.x, currentCell.y, love.timer.getFPS())
     love.graphics.print(text,0,0)
 end
