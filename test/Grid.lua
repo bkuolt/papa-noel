@@ -2,6 +2,81 @@ config = require("conf")
 
 --[[
 ----------------------------------------------------
+Tile iterator
+----------------------------------------------------]]
+local function getNextColumn(tiles, x, y)
+    return next(tiles[y], x)
+end
+
+local function getNextRow(tiles, y)
+    return next(tiles, y)
+end
+  
+local function skipEmptyTiles(tiles, x, y)
+    if x == nil and y == nil then 
+        return 
+    end
+
+    ::Iterate::
+    if tiles[y][x] == nil or tiles[y][x].image == nil then
+        x, y = getNextTile(tiles, x, y)
+        goto Iterate 
+    end
+    
+    return x,y 
+end
+
+
+local function getFirstTile(tiles)
+    local y = getNextRow(tiles, nil)
+    if y == nil then return end -- empty table
+    local x = getNextColumn(tiles, nil, y)
+    if x == nil then return end -- empty table
+
+    x,y = skipEmptyTiles(tiles, x, y)
+    return x, y
+end
+
+function getNextTile(tiles, x, y)
+    x = getNextColumn(tiles, x, y)
+    if x == nil then
+        y = getNextRow(tiles, y)
+        if y == nil then return end -- iteration finished
+        x = getNextColumn(tiles, nil, y)
+        if x == nil then return end -- iteration finished
+    end
+    return x, y
+end
+
+function tiles(grid)
+    if grid == nil then 
+        return function()
+            return
+        end
+    end
+
+    -- get first tile
+    local current = {}
+    current.x, current.y = getFirstTile(grid.tiles)
+
+    return function()
+        if current.x == nil and current.y == nil then 
+            return  -- no more tiles
+        end
+
+        tmp = {}
+        tmp.x, tmp.y = current.x, current.y 
+
+        current.x, current.y = getNextTile(grid.tiles, current.x, current.y)  
+        current.x, current.y = skipEmptyTiles(grid.tiles, current.x, current.y)  
+
+        return grid.tiles[tmp.y][tmp.x], tmp.x, tmp.y
+    end
+end
+
+
+--[[
+----------------------------------------------------
  Grid
 ----------------------------------------------------]]
 local Grid = {}
@@ -112,16 +187,12 @@ function Grid:drawTiles()
         love.graphics.translate(self.position.x, self.position.y)
         love.graphics.setColor(255, 255, 255)
 
-        for y, row in pairs(self.tiles) do
-            for x, _ in pairs(row) do
-                local image = row[x].image
-                if image ~= nil then
-                    local imageWidth, imageHeight = image:getData():getDimensions()
-                    love.graphics.draw(image, x * tileWidth, y * tileHeight, 0,
-                                    tileWidth / imageWidth, tileHeight / imageHeight)
-                end
-            end
+        for tile, x, y in tiles(self) do
+            local imageWidth, imageHeight = tile.image:getData():getDimensions()
+            love.graphics.draw(tile.image, x * tileWidth, y * tileHeight, 0,
+                                tileWidth / imageWidth, tileHeight / imageHeight)
         end
+
     love.graphics.pop()
 end
 

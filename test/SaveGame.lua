@@ -36,14 +36,9 @@ function SaveGrid(images)
     file:write(grid.position.y, "\n") 
     file:write(boolToNumber(config.ShowGrid), "\n")       -- write grid visibility  
 
-     -- write tiles
-     for y, _ in pairs(grid.tiles) do
-        for x, _ in pairs(grid.tiles[y]) do
-            local tile = grid.tiles[y][x]
-            if tile ~= nil and tile.image ~= nil then
-                file:write(x, " ", y, " ", GetIndexFromImage(images, tile.image), "\n")
-            end
-        end
+    -- write tiles
+    for tile, x, y in tiles(grid) do
+        file:write(x, " ", y, " ", GetIndexFromImage(images, tile.image), "\n")
     end
 
     file:close()
