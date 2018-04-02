@@ -71,7 +71,6 @@ function LoadGrid(images)
 
     -- create new grid
     grid = createGrid(columns, rows)
-    grid:scroll(scrollOffset.x, scrollOffset.y)
 
     -- read all saved tiles
     local tileCount = 0
@@ -88,6 +87,8 @@ function LoadGrid(images)
         grid:addTile(x, y, images[imageIndex])
         tileCount = tileCount + 1
     end
+
+    grid:scroll(scrollOffset.x, scrollOffset.y)
 
     file:close()
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))

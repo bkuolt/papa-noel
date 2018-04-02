@@ -101,6 +101,7 @@ function createParticleSystem(particleCount, image, particleSize)
         particleSystem.particles[i] = particleSystem:createParticle()
     end
 
+    particleSystem.initalized = true
     return particleSystem
 end
 
@@ -108,7 +109,12 @@ function ParticleSystem:createParticle(existingParticle)
     local particle = existingParticle or {}
     
     particle.x = math.random(0, love.graphics.getWidth())
-    particle.y = 0 -- TODO
+
+    if self.initalized then 
+        particle.y = 0
+    else
+        particle.y = math.random(0, love.graphics.getHeight())
+    end
 
     particle.gravity = math.random(100,300) -- TODO
 
@@ -148,7 +154,6 @@ end
 Initialization
 ----------------------------------------------------]]
 function love.load() 
-    love.window.setFullscreen(true)
     love.window.setTitle("Papa Noel Level Editor")
     love.graphics.setDefaultFilter("linear", "linear")
 

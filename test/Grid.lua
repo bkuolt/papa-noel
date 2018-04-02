@@ -185,7 +185,6 @@ function Grid:drawTiles()
 
     love.graphics.push()
         love.graphics.translate(self.position.x, self.position.y)
-        love.graphics.setColor(255, 255, 255)
 
         for tile, x, y in tiles(self) do
             local imageWidth, imageHeight = tile.image:getDimensions()
@@ -208,10 +207,53 @@ function Grid:draw()
     self:drawTiles()
 end
 
+function Grid:getFirstRow()
+    local firstRow = next(self.tiles, nil)
+    
+    local max_x = -math.huge
+    local min_x =  math.huge
+    
+    for tile, x, y in tiles(self) do 
+        max_x = math.max(max_x, x)
+        min_x = math.min(min_x, x)
+    end
+
+    return min_x, max_x
+end
+
 function Grid:scroll(x, y)
     self.position.x = self.position.x + x
     self.position.y = self.position.y + y
 
+    local firstTileIndex, lastTileIndex = self:getFirstRow()
+   
+    if firstTileIndex ~= nil then
+        local tileWidth = self:getTileDimensions()
+        local screenWidth = self.columns * tileWidth
+        local lastTilePosition = (lastTileIndex + 1) * tileWidth
+        local firstTilePosition = firstTileIndex * tileWidth
+
+        --[[
+           ==========--------
+           | Screen | World |
+           =========x--------
+        ]]
+        if -self.position.x <= firstTilePosition then 
+            self.position.x = -firstTilePosition
+            return
+        end
+        
+        --[[
+           ---------=========
+           | World | Screen |
+           --------x=========
+        ]]
+        if -self.position.x + screenWidth >= lastTilePosition then
+            self.position.x = - (lastTilePosition - screenWidth)
+            return
+        end
+    end
+    
     self:scrollBackground(x / 2)
 end
 
