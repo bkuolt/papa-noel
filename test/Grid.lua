@@ -143,7 +143,7 @@ function Grid:drawGrid()
 
     local tileWidth, tileHeight = self:getTileDimensions()
 
-    love.graphics.push()
+    love.graphics.push("all")
         love.graphics.setLineWidth(1)
         love.graphics.setColor(grey(0.5))
         
