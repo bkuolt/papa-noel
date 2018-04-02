@@ -138,14 +138,14 @@ end
 
 function Grid:drawGrid()
     local grey = function(value) 
-        return value, value, value, 255
+        return value, value, value, 1.0
     end
 
     local tileWidth, tileHeight = self:getTileDimensions()
 
     love.graphics.push()
         love.graphics.setLineWidth(1)
-        love.graphics.setColor(grey(64))
+        love.graphics.setColor(grey(0.5))
         
         love.graphics.origin()
         love.graphics.translate(self.position.x % tileWidth, self.position.y % tileHeight)
@@ -167,7 +167,7 @@ end
 
 function Grid:drawBackground()
     local screenWidth, screenHeight = love.graphics.getDimensions()
-    local imageWidth, imageHeight = self.background:getData():getDimensions()
+    local imageWidth, imageHeight = self.background:getDimensions()
     
     love.graphics.push()
         local translation = self.backgroundScroll.x % screenWidth
@@ -188,7 +188,7 @@ function Grid:drawTiles()
         love.graphics.setColor(255, 255, 255)
 
         for tile, x, y in tiles(self) do
-            local imageWidth, imageHeight = tile.image:getData():getDimensions()
+            local imageWidth, imageHeight = tile.image:getDimensions()
             love.graphics.draw(tile.image, x * tileWidth, y * tileHeight, 0,
                                 tileWidth / imageWidth, tileHeight / imageHeight)
         end

@@ -7,7 +7,7 @@ local currentCell = {x = 0, y = 0}
 local images = {}
 
 local function loadTiles(path)
-    assert(love.filesystem.isDirectory(path), "invalid path")
+    assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
     
     -- ensure trailing '/'
     if string.sub(path, -1) ~= "/" then
@@ -130,8 +130,8 @@ end
 
 function ParticleSystem:draw()
     local scale = {
-        x = self.particleSize / self.image:getData():getWidth(),
-        y = self.particleSize / self.image:getData():getHeight()
+        x = self.particleSize / self.image:getWidth(),
+        y = self.particleSize / self.image:getHeight()
     }
 
     love.graphics.setColor(255,255,255)
