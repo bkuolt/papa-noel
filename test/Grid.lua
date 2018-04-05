@@ -1,5 +1,6 @@
 config = require("conf")
 
+
 --[[
 ----------------------------------------------------
 Tile iterator
@@ -74,7 +75,6 @@ function tiles(grid)
     end
 end
 
-
 --[[
 ----------------------------------------------------
  Grid
@@ -87,8 +87,7 @@ function createGrid(columns, rows)
     local grid = {
         rows = rows,       -- maximum number of rows in the grid on the screen 
         columns = columns, -- maximum number of columns in the grid on the screen
-        position = { x = 0, y = 0 },
-        backgroundScroll = { x = 0, y = 0 },
+        scrollOffset = { x = 0, y = 0 },
         tiles = {}
     }
     setmetatable(grid, {__index = Grid})
@@ -102,9 +101,9 @@ function Grid:getTileDimensions()
     return screenWidth / self.columns , screenHeight / self.rows
 end
 
-function Grid:getTileIndices(x, y) 
+function Grid:getTileIndices(x, y)
     local tileWidth, tileHeight = self:getTileDimensions()
-    return math.floor((x - self.position.x) / tileWidth), math.floor((y - self.position.y) / tileHeight)
+    return math.floor((x - self.scrollOffset.x) / tileWidth), math.floor((y - self.scrollOffset.y) / tileHeight)
 end
 
 function Grid:getTile(x, y)
@@ -117,23 +116,25 @@ function Grid:getTile(x, y)
     return self.tiles[row][column]
 end
 
+function Grid:removeTile(x, y)
+    local tile = getTile(x, y)
+    if tile == nil then return end
+    self.tiles[y][x] = nil
+end
+
 function Grid:setTile(x, y, image)
+    assert(image == nil, "Invalid tile image")
+
     local column, row = self:getTileIndices(x, y)
-    
     self.tiles[row] = self.tiles[row] or {}
     self.tiles[row][column] = self.tiles[row][column] or {}
     self.tiles[row][column].image = image 
-    -- TODO: delete empty tiles (tiles without images)
 end
 
 function Grid:addTile(column, row, image)
     self.tiles[row] = self.tiles[row] or {}
     self.tiles[row][column] = {}
     self.tiles[row][column].image = image
-end
-
-function Grid:setBackground(image)
-    self.background = image
 end
 
 function Grid:drawGrid()
@@ -148,7 +149,7 @@ function Grid:drawGrid()
         love.graphics.setColor(grey(0.5))
         
         love.graphics.origin()
-        love.graphics.translate(self.position.x % tileWidth, self.position.y % tileHeight)
+        love.graphics.translate(self.scrollOffset.x % tileWidth, self.scrollOffset.y % tileHeight)
 
         for y = -1, self.rows + 1 do
             for x = -1, self.columns + 1 do
@@ -158,48 +159,22 @@ function Grid:drawGrid()
     love.graphics.pop()
 end
 
-time = love.timer.getTime()
-
-
-function Grid:scrollBackground(offset)
-    self.backgroundScroll.x = self.backgroundScroll.x + offset
-end
-
-function Grid:drawBackground()
-    local screenWidth, screenHeight = love.graphics.getDimensions()
-    local imageWidth, imageHeight = self.background:getDimensions()
-    
-    love.graphics.push()
-        local translation = self.backgroundScroll.x % screenWidth
-
-        love.graphics.draw(self.background,  translation, 0, 0,  screenWidth / imageWidth, screenHeight / imageHeight)
-        love.graphics.draw(self.background,  translation + screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
-        love.graphics.draw(self.background,  translation - screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
-        
-    love.graphics.pop()
-
-end
-
 function Grid:drawTiles()
     local tileWidth, tileHeight = self:getTileDimensions()
 
     love.graphics.push()
-        love.graphics.translate(self.position.x, self.position.y)
+        love.graphics.translate(self.scrollOffset.x, self.scrollOffset.y)
 
         for tile, x, y in tiles(self) do
             local imageWidth, imageHeight = tile.image:getDimensions()
             love.graphics.draw(tile.image, x * tileWidth, y * tileHeight, 0,
-                                tileWidth / imageWidth, tileHeight / imageHeight)
+                               tileWidth / imageWidth, tileHeight / imageHeight)
         end
 
     love.graphics.pop()
 end
 
 function Grid:draw()
-    --if self.background then 
-      --  self:drawBackground()
-    --end
-
     if config.ShowGrid then
         self:drawGrid()
     end
@@ -222,8 +197,8 @@ function Grid:getFirstRow()
 end
 
 function Grid:scroll(x, y)
-    self.position.x = self.position.x + x
-    self.position.y = self.position.y + y
+    self.scrollOffset.x = self.scrollOffset.x + x
+    self.scrollOffset.y = self.scrollOffset.y + y
 
     local firstTileIndex, lastTileIndex = self:getFirstRow()
    
@@ -238,9 +213,9 @@ function Grid:scroll(x, y)
            | Screen | World |
            =========x--------
         ]]
-        if -self.position.x <= firstTilePosition then 
-            self.position.x = -firstTilePosition
-            return
+        if -self.scrollOffset.x <= firstTilePosition then 
+            self.scrollOffset.x = -firstTilePosition
+            return false
         end
         
         --[[
@@ -248,13 +223,15 @@ function Grid:scroll(x, y)
            | World | Screen |
            --------x=========
         ]]
-        if -self.position.x + screenWidth >= lastTilePosition then
-            self.position.x = - (lastTilePosition - screenWidth)
-            return
+        if -self.scrollOffset.x + screenWidth >= lastTilePosition then
+            self.scrollOffset.x = - (lastTilePosition - screenWidth)
+            return false
         end
     end
     
-    self:scrollBackground(x / 2)
+    return true
 end
 
+
 return Grid
+

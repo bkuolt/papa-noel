@@ -27,17 +27,17 @@ GridFile = "world.data"
 
 
 function SaveGrid(images)
-    assert(grid ~= nil, "No world to save")
+    assert(level.grid ~= nil, "No world to save")
     
     local file = io.open(GridFile, "w+")
     file:write(2, "\n")                            -- write version
-    file:write(grid.rows, " ", grid.columns, "\n") -- write world size
-    file:write(grid.position.x, "\n")              -- write scroll offset
-    file:write(grid.position.y, "\n") 
+    file:write(level.grid.rows, " ", level.grid.columns, "\n") -- write world size
+    file:write(level.grid.scrollOffset.x, "\n")              -- write scroll offset
+    file:write(level.grid.scrollOffset.y, "\n") 
     file:write(boolToNumber(config.ShowGrid), "\n")       -- write grid visibility  
 
     -- write tiles
-    for tile, x, y in tiles(grid) do
+    for tile, x, y in tiles(level.grid) do
         file:write(x, " ", y, " ", GetIndexFromImage(images, tile.image), "\n")
     end
 
@@ -45,7 +45,7 @@ function SaveGrid(images)
     print("Saved world")
 end
 
-function LoadGrid(images)
+function LoadLevel(images)
     local file = io.open(GridFile, "r")
     
     if file == nil then
@@ -70,7 +70,7 @@ function LoadGrid(images)
     end
 
     -- create new grid
-    grid = createGrid(columns, rows)
+    level = createLevel(columns, rows)
 
     -- read all saved tiles
     local tileCount = 0
@@ -84,11 +84,11 @@ function LoadGrid(images)
         local imageIndex = file:read("*number")
 
         -- TODO: check if world is large enough for tile
-        grid:addTile(x, y, images[imageIndex])
+        level:setTile(x, y, images[imageIndex])
         tileCount = tileCount + 1
     end
 
-    grid:scroll(scrollOffset.x, scrollOffset.y)
+    level:scroll(scrollOffset.x, scrollOffset.y)
 
     file:close()
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))

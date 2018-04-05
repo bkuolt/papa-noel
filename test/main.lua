@@ -1,10 +1,9 @@
 config = require("conf")
-Grid = require("Grid")
+require("Level")
 require("SaveGame")
-require("ParticleSystem")
+
 
 local currentImageIndex = 1         -- the currently seleted image
-local currentCell = {x = 0, y = 0}
 local images = {}
 
 local function loadTiles(path)
@@ -33,13 +32,13 @@ end
 Mouse Callbacks
 ----------------------------------------------------]]
 function love.mousemoved(x, y, dx, dy, istouch)
-    currentCell.x, currentCell.y = grid:getTileIndices(x,y)
+  --  currentCell.x, currentCell.y = level.grid:getTileIndices(x,y)
 
     if love.mouse.isDown(2) then -- left mouse button pressed and mouse moved
         love.mouse.setCursor(love.mouse.getSystemCursor("crosshair"))
-        grid:scroll(dx, dy)
+        level:scroll(dx, dy)
     else
-        local tile = grid:getTile(x, y)
+        local tile = level:getTile(x, y)
         if tile == nil or tile.image == nil then -- mouse over empty tile
             love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
         else -- mouse over set tile
@@ -51,7 +50,7 @@ end
 
 function love.mousepressed(x, y, button, istouch)
     if button == 1 then -- left click on tile
-        local tile = grid:getTile(x, y)
+        local tile = level:getTile(x, y)
         
         love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
 
@@ -59,10 +58,10 @@ function love.mousepressed(x, y, button, istouch)
             scrollCurrentImage(1)
         end
 
-        grid:setTile(x, y, images[currentImageIndex])
+        level:setTile(x, y, images[currentImageIndex])
     elseif button == 2 then -- right click on set tile -> eras tile
         love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
-        grid:setTile(x, y, nil)
+        level:removeTile(x, y)
     end
 end
 
@@ -71,7 +70,7 @@ function love.wheelmoved(x, y)
 
     -- update tile image
     local x, y = love.mouse.getPosition()
-    grid:setTile(x, y, images[currentImageIndex])
+    level:setTile(x, y, images[currentImageIndex])
 end
 
 --[[
@@ -97,15 +96,12 @@ function love.load()
 
     loadTiles("Tiles/")
 
-    if not LoadGrid(images) then 
-         grid = createGrid(16, 8)
+    if not LoadLevel(images) then 
+         level = createLevel(16, 8)
     end
 
     local backgroundImage = love.graphics.newImage("background.png")
-
-    particleSystem = createParticleSystem(1000, love.graphics.newImage("a.png") ,16)
-
-    grid:setBackground(backgroundImage)
+    level:setBackground(backgroundImage)
 end
 
 function love.update(delta)
@@ -123,22 +119,16 @@ function love.update(delta)
     end
 
     -- TODO: update mouse cursor when moving
-    grid:scroll(scrollOffset.x, scrollOffset.y)
+    level:scroll(scrollOffset.x, scrollOffset.y)
 
-    particleSystem:update(delta)
+    level:update(delta)
 end
 
 
 function love.draw()
     love.graphics.clear(32, 32, 32)
- 
-    grid:drawBackground()
-    
-    particleSystem:draw()
-    
-    grid:draw()
+    level:draw()
 
- 
-    local text = string.format("Tile %d/%d | %d FPS",currentCell.x, currentCell.y, love.timer.getFPS())
+    local text = string.format("%d FPS", love.timer.getFPS())
     love.graphics.print(text,0,0)
 end
