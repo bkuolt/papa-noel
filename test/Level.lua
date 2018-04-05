@@ -8,20 +8,16 @@ require("Grid")
 local Level = {}
 
 function createLevel(rows, columns)
-
-
     local level = {
         backgroundScroll = { x = 0, y = 0 },
         background = nil,
-        grid = createGrid(rows, columns)
+        grid = createGrid(rows, columns),
+        particleSystem = createParticleSystem(1000, love.graphics.newImage("a.png") ,16)
     }
     setmetatable(level, {__index = Level})
-    level.particleSystem = createParticleSystem(1000, love.graphics.newImage("a.png") ,16)
 
     return level
 end
-
---add set tile
 
 function Level:setTile(x, y, tile)
     self.grid:addTile(x, y, tile)
@@ -45,9 +41,12 @@ function Level:scroll(x, y)
     end
 end
 
-
 function Level:scrollBackground(x)
     self.backgroundScroll.x = self.backgroundScroll.x + x
+end
+
+function Level:update(delta)
+    self.particleSystem:update(delta)
 end
 
 function Level:drawBackground()
@@ -75,8 +74,4 @@ function Level:draw()
     self:drawBackground()
     self:drawSnow()
     self:drawTiles()
-end
-
-function Level:update(delta)
-    self.particleSystem:update(delta)
 end

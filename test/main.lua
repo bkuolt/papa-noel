@@ -124,7 +124,6 @@ function love.update(delta)
     level:update(delta)
 end
 
-
 function love.draw()
     love.graphics.clear(32, 32, 32)
     level:draw()

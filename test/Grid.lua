@@ -18,15 +18,12 @@ local function skipEmptyTiles(tiles, x, y)
         return 
     end
 
-    ::Iterate::
-    if tiles[y][x] == nil or tiles[y][x].image == nil then
+    while tiles[y][x] == nil or tiles[y][x].image == nil do
         x, y = getNextTile(tiles, x, y)
-        goto Iterate 
     end
     
     return x,y 
 end
-
 
 local function getFirstTile(tiles)
     local y = getNextRow(tiles, nil)
@@ -38,7 +35,7 @@ local function getFirstTile(tiles)
     return x, y
 end
 
-function getNextTile(tiles, x, y)
+local function getNextTile(tiles, x, y)
     x = getNextColumn(tiles, x, y)
     if x == nil then
         y = getNextRow(tiles, y)
@@ -108,7 +105,6 @@ end
 
 function Grid:getTile(x, y)
     local column, row = self:getTileIndices(x, y)
-
     if self.tiles[row] == nil or self.tiles[row][column] == nil then 
         return nil 
     end
@@ -137,16 +133,60 @@ function Grid:addTile(column, row, image)
     self.tiles[row][column].image = image
 end
 
-function Grid:drawGrid()
-    local grey = function(value) 
-        return value, value, value, 1.0
+function Grid:getLimits()
+    local max = { x = -math.huge }
+    local min = { x =  math.huge }
+    
+    for tile, x, y in tiles(self) do 
+        max.x = math.max(max.x, x)
+        min.x = math.min(min.x, x)
     end
 
+    return min.x, max.x
+end
+
+function Grid:scroll(x, y)
+    self.scrollOffset.x = self.scrollOffset.x + x
+    self.scrollOffset.y = self.scrollOffset.y + y
+
+    local firstTileIndex, lastTileIndex = self:getLimits()
+   
+    if firstTileIndex ~= nil then
+        local tileWidth = self:getTileDimensions()
+        local screenWidth = self.columns * tileWidth
+        local lastTilePosition = (lastTileIndex + 1) * tileWidth
+        local firstTilePosition = firstTileIndex * tileWidth
+
+        --[[
+           ==========--------
+           | Screen | World |
+           =========x--------
+        ]]
+        if -self.scrollOffset.x <= firstTilePosition then 
+            self.scrollOffset.x = -firstTilePosition
+            return false
+        end
+        
+        --[[
+           ---------=========
+           | World | Screen |
+           --------x=========
+        ]]
+        if -self.scrollOffset.x + screenWidth >= lastTilePosition then
+            self.scrollOffset.x = - (lastTilePosition - screenWidth)
+            return false
+        end
+    end
+    
+    return true
+end
+
+function Grid:drawGrid()
     local tileWidth, tileHeight = self:getTileDimensions()
 
     love.graphics.push("all")
         love.graphics.setLineWidth(1)
-        love.graphics.setColor(grey(0.5))
+        love.graphics.setColor(0.5, 0.5, 0.5)
         
         love.graphics.origin()
         love.graphics.translate(self.scrollOffset.x % tileWidth, self.scrollOffset.y % tileHeight)
@@ -181,57 +221,6 @@ function Grid:draw()
 
     self:drawTiles()
 end
-
-function Grid:getFirstRow()
-    local firstRow = next(self.tiles, nil)
-    
-    local max_x = -math.huge
-    local min_x =  math.huge
-    
-    for tile, x, y in tiles(self) do 
-        max_x = math.max(max_x, x)
-        min_x = math.min(min_x, x)
-    end
-
-    return min_x, max_x
-end
-
-function Grid:scroll(x, y)
-    self.scrollOffset.x = self.scrollOffset.x + x
-    self.scrollOffset.y = self.scrollOffset.y + y
-
-    local firstTileIndex, lastTileIndex = self:getFirstRow()
-   
-    if firstTileIndex ~= nil then
-        local tileWidth = self:getTileDimensions()
-        local screenWidth = self.columns * tileWidth
-        local lastTilePosition = (lastTileIndex + 1) * tileWidth
-        local firstTilePosition = firstTileIndex * tileWidth
-
-        --[[
-           ==========--------
-           | Screen | World |
-           =========x--------
-        ]]
-        if -self.scrollOffset.x <= firstTilePosition then 
-            self.scrollOffset.x = -firstTilePosition
-            return false
-        end
-        
-        --[[
-           ---------=========
-           | World | Screen |
-           --------x=========
-        ]]
-        if -self.scrollOffset.x + screenWidth >= lastTilePosition then
-            self.scrollOffset.x = - (lastTilePosition - screenWidth)
-            return false
-        end
-    end
-    
-    return true
-end
-
 
 return Grid
 
