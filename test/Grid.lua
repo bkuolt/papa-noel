@@ -141,8 +141,13 @@ function Grid:getLimits()
 end
 
 function Grid:scroll(x, y)
+    -- TODO: perform horizontal checks
     self.scrollOffset.x = self.scrollOffset.x + x
     self.scrollOffset.y = self.scrollOffset.y + y
+
+    if config.mode == "Editor" then
+        return true -- no need for checks in Editor mode
+    end
 
     local firstTileIndex, lastTileIndex = self:getLimits()
    
@@ -194,10 +199,9 @@ function Grid:drawGrid()
     love.graphics.pop()
 end
 
-
 function Grid:isMarkedForDeletetion()
+    -- TODO
 end
-
 
 function Grid:getVisibleRange()
     local min = {x = 0}

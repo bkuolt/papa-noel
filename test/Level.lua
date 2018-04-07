@@ -19,16 +19,16 @@ function createLevel(rows, columns)
     return level
 end
 
-function Level:setTile(x, y, tile)
-    self.grid:setTile(x, y, tile)
+function Level:setTile(column, row, tile)
+    self.grid:setTile(column, row, tile)
 end
 
-function Level:getTile(x, y)
-    return self.grid:getTile(x, y)
+function Level:getTile(column, row)
+    return self.grid:getTile(column, row)
 end
 
-function Level:removeTile(x, y)
-    return self.grid:removeTile(x, y)
+function Level:removeTile(column, row)
+    return self.grid:removeTile(column, row)
 end
 
 function Level:setBackground(image)
