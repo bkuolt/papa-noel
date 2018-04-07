@@ -119,8 +119,6 @@ end
 --------------------------------------------
 -- Love2D Callbacks
 --------------------------------------------
-
-
 function LoadImage(filename, red, green, blue)
     local image = love.graphics.newImage(filename)
     

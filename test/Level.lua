@@ -20,7 +20,7 @@ function createLevel(rows, columns)
 end
 
 function Level:setTile(x, y, tile)
-    self.grid:addTile(x, y, tile)
+    self.grid:setTile(x, y, tile)
 end
 
 function Level:getTile(x, y)

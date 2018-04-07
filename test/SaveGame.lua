@@ -3,7 +3,7 @@ config = require("conf")
 function GetIndexFromImage(images, image)
     for i = 1, #images do 
         if images[i] == image then
-            return i 
+            return i
         end
     end
     return 0
@@ -38,14 +38,39 @@ function SaveGrid(images)
 
     -- write tiles
     for tile, x, y in tiles(level.grid) do
-        file:write(x, " ", y, " ", GetIndexFromImage(images, tile.image), "\n")
+        file:write(x, " ", y, " ", GetIndexFromImage(level.tileImages, tile.image), "\n")
     end
 
     file:close()
     print("Saved world")
 end
 
-function LoadLevel(images)
+local function loadTileImages(path)
+    assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
+    
+    -- ensure trailing '/'
+    if string.sub(path, -1) ~= "/" then
+        path = path .. "/"
+    end
+
+    -- load all images from the specified path 
+    local files = love.filesystem.getDirectoryItems(path)
+
+    local images = {}
+    for index, file in ipairs(files) do
+        images[#images + 1] = love.graphics.newImage(path .. file)
+    end
+
+    print("Loaded " ..#images.. " tiles")
+    return images
+end
+
+function LoadLevel()
+
+    -- if not LoadLevel(images) then 
+    --     level = createLevel(16, 8)
+    -- end
+
     local file = io.open(GridFile, "r")
     
     if file == nil then
@@ -72,6 +97,11 @@ function LoadLevel(images)
     -- create new grid
     level = createLevel(columns, rows)
 
+    level.tileImages = loadTileImages("Tiles/")
+    local backgroundImage = love.graphics.newImage("background.png")
+    level:setBackground(backgroundImage)
+
+
     -- read all saved tiles
     local tileCount = 0
     while true do
@@ -84,7 +114,7 @@ function LoadLevel(images)
         local imageIndex = file:read("*number")
 
         -- TODO: check if world is large enough for tile
-        level:setTile(x, y, images[imageIndex])
+        level:setTile(x, y, level.tileImages[imageIndex])
         tileCount = tileCount + 1
     end
 

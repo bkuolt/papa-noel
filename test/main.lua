@@ -1,76 +1,125 @@
 config = require("conf")
 require("Level")
 require("SaveGame")
+require("Animation")
 
 
 local currentImageIndex = 1         -- the currently seleted image
-local images = {}
 
-local function loadTiles(path)
-    assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
-    
-    -- ensure trailing '/'
-    if string.sub(path, -1) ~= "/" then
-        path = path .. "/"
+--[[
+----------------------------------------------------
+Level Editor
+----------------------------------------------------]]
+function toggleMode()
+    if config.mode ~= "Editor" then
+         config.mode = "Editor"
+    else 
+        config.mode = "Game"
     end
 
-    -- load all images from the specified path 
-    local files = love.filesystem.getDirectoryItems(path)
-    for index, file in ipairs(files) do
-        images[#images + 1] = love.graphics.newImage(path .. file)
-    end
-
-    print("Loaded " ..#images.. " tiles")
+    love.mouse.setVisible(config.mode == "Editor")
+    config.ShowGrid = not config.ShowGrid -- toggle grid visibility
 end
 
-local function scrollCurrentImage(offset)
-    currentImageIndex = (currentImageIndex + offset) % (1 + #images)
+local function setCurrentImage(image)
+    if image == nil then
+        currentImageIndex = 1
+        return
+    end    
+    currentImageIndex = GetIndexFromImage(images, image)
+end
+
+local function getCurrentTileImage()
+    return level.tileImages[currentImageIndex]
+end
+
+function scrollTileImage(tile, scrollOffset)
+    setCurrentImage(tile.image)
+
+    currentImageIndex = (currentImageIndex + scrollOffset) % #images
+    currentImageIndex = math.max(1, currentImageIndex)
+
+    tile.image = level.tileImages[currentImageIndex]
+end
+
+--[[
+@brief Creates a new tile on the clicked cell in the grid or scrolls the current tiles image
+@param x,y mouse coordinates in pixels
+@param button currently pressed mouse button (Love2D values)
+]]
+local LevelEditor = {}
+
+function LevelEditor.onClick(x, y, button)
+    local column, row = level.grid:getTileIndices(x, y)
+
+    if button == 1 then      -- (left click) set or scroll tile image
+        local tile = level:getTile(column, row)
+        if tile == nil then
+             level:setTile(column, row, getCurrentTileImage())
+        else scrollTileImage(tile, 1)
+        end
+
+        love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
+    elseif button == 2 then  -- (right click) remove tile
+        level:removeTile(column, row)
+        setCurrentImage(nil)
+        love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
+    end
+end
+
+--[[
+@brief Scrolls the image, if existent, of the current grid cell 
+@param x,y mouse coordinates in pixels
+@param scrollOffset mouse wheel scroll units
+]]
+function LevelEditor.onMouseWheelMoved(x, y, scrollOffset)
+    local column, row = level.grid:getTileIndices(x, y)
+
+    local tile = level.grid:getTile(column, row)
+    if tile == nil then 
+        return -- no tile to scroll image for 
+    end
+
+    scrollTileImage(tile, scrollOffset)
+end
+
+function LevelEditor.onMouseMove(x, y, dx, dy)
+    if love.mouse.isDown(2) then -- left mouse button pressed and mouse moved
+        level:scroll(dx, dy)
+        love.mouse.setCursor(love.mouse.getSystemCursor("crosshair"))
+    else
+        local column, row = level.grid:getTileIndices(x, y)
+        local tile = level.grid:getTile(column, row)
+
+        if tile == nil then -- mouse over empty tile
+            love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
+        else -- mouse over set tile
+            love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
+        end
+    end
 end
 
 --[[
 ----------------------------------------------------
 Mouse Callbacks
 ----------------------------------------------------]]
-function love.mousemoved(x, y, dx, dy, istouch)
-  --  currentCell.x, currentCell.y = level.grid:getTileIndices(x,y)
-
-    if love.mouse.isDown(2) then -- left mouse button pressed and mouse moved
-        love.mouse.setCursor(love.mouse.getSystemCursor("crosshair"))
-        level:scroll(dx, dy)
-    else
-        local tile = level:getTile(x, y)
-        if tile == nil or tile.image == nil then -- mouse over empty tile
-            love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
-        else -- mouse over set tile
-            love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
-            currentImageIndex = GetIndexFromImage(images, tile.image)
-        end
-    end
-end
-
 function love.mousepressed(x, y, button, istouch)
-    if button == 1 then -- left click on tile
-        local tile = level:getTile(x, y)
-        
-        love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
-
-        if tile ~= nil and tile.image ~= nil then
-            scrollCurrentImage(1)
-        end
-
-        level:setTile(x, y, images[currentImageIndex])
-    elseif button == 2 then -- right click on set tile -> eras tile
-        love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
-        level:removeTile(x, y)
+    if config.mode == "Editor" then
+        LevelEditor.onClick(x, y, button)
     end
 end
 
-function love.wheelmoved(x, y)
-    scrollCurrentImage(y)
+function love.wheelmoved(dx, dy)
+    if config.mode == "Editor" then 
+        local x, y = love.mouse.getPosition()
+        LevelEditor.onMouseWheelMoved(x, y, dy)
+    end
+end
 
-    -- update tile image
-    local x, y = love.mouse.getPosition()
-    level:setTile(x, y, images[currentImageIndex])
+function love.mousemoved(x, y, dx, dy, istouch)
+    if config.mode == "Editor" then 
+        LevelEditor.onMouseMove(x, y, dx, dy)
+    end
 end
 
 --[[
@@ -80,9 +129,11 @@ Keyboard Callbacks
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
         SaveGrid(images)
-        love.event.quit()       -- terminate
+        love.event.quit() -- terminate
+    elseif key == "p" then
+        -- TODO: implement pause mode
     elseif key == "space" then
-        config.ShowGrid = not config.ShowGrid -- toggle grid visibility
+        toggleMode()
     end
 end
 
@@ -93,15 +144,9 @@ Initialization
 function love.load() 
     love.window.setTitle("Papa Noel Level Editor")
     love.graphics.setDefaultFilter("linear", "linear")
+    love.mouse.setVisible(false)
 
-    loadTiles("Tiles/")
-
-    if not LoadLevel(images) then 
-         level = createLevel(16, 8)
-    end
-
-    local backgroundImage = love.graphics.newImage("background.png")
-    level:setBackground(backgroundImage)
+    LoadLevel()
 end
 
 function love.update(delta)
@@ -124,10 +169,16 @@ function love.update(delta)
     level:update(delta)
 end
 
-function love.draw()
-    love.graphics.clear(32, 32, 32)
-    level:draw()
+local function PrintStatistics()
+    local statistics = love.graphics.getStats()
 
-    local text = string.format("%d FPS", love.timer.getFPS())
+    local text = string.format("%d drawcalls (%d batched) | %d MB textures | %d FPS", 
+                               statistics.drawcalls, statistics.drawcallsbatched, statistics.texturememory / 1024^2, love.timer.getFPS())
     love.graphics.print(text,0,0)
+end
+
+function love.draw()
+    love.graphics.clear(0, 0, 0)
+    level:draw()
+    PrintStatistics()
 end

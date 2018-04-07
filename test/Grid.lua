@@ -12,7 +12,7 @@ end
 local function getNextRow(tiles, y)
     return next(tiles, y)
 end
-  
+
 local function skipEmptyTiles(tiles, x, y)
     if x == nil and y == nil then 
         return 
@@ -22,7 +22,7 @@ local function skipEmptyTiles(tiles, x, y)
         x, y = getNextTile(tiles, x, y)
     end
     
-    return x,y 
+    return x, y
 end
 
 local function getFirstTile(tiles)
@@ -103,34 +103,29 @@ function Grid:getTileIndices(x, y)
     return math.floor((x - self.scrollOffset.x) / tileWidth), math.floor((y - self.scrollOffset.y) / tileHeight)
 end
 
-function Grid:getTile(x, y)
-    local column, row = self:getTileIndices(x, y)
-    if self.tiles[row] == nil or self.tiles[row][column] == nil then 
+function Grid:getTile(column, row)
+    assert(row ~= nil and column ~= nil, "Invalid tile indices")
+
+    if self.tiles[row] == nil or self.tiles[row][column] == nil or  self.tiles[row][column].image == nil then 
         return nil 
     end
-
     return self.tiles[row][column]
 end
 
-function Grid:removeTile(x, y)
-    local tile = getTile(x, y)
-    if tile == nil then return end
-    self.tiles[y][x] = nil
+function Grid:removeTile(column, row)
+    local tile = self:getTile(column, row)
+    if tile == nil then
+        return -- no tile to delete
+    end
+    self.tiles[row][column] = nil
 end
 
-function Grid:setTile(x, y, image)
-    assert(image == nil, "Invalid tile image")
+function Grid:setTile(column, row, image)
+    assert(image ~= nil, "Invalid tile image")
 
-    local column, row = self:getTileIndices(x, y)
     self.tiles[row] = self.tiles[row] or {}
     self.tiles[row][column] = self.tiles[row][column] or {}
     self.tiles[row][column].image = image 
-end
-
-function Grid:addTile(column, row, image)
-    self.tiles[row] = self.tiles[row] or {}
-    self.tiles[row][column] = {}
-    self.tiles[row][column].image = image
 end
 
 function Grid:getLimits()
@@ -198,6 +193,26 @@ function Grid:drawGrid()
         end
     love.graphics.pop()
 end
+
+
+function Grid:isMarkedForDeletetion()
+end
+
+
+function Grid:getVisibleRange()
+    local min = {x = 0}
+    local max = {x = 0}
+    
+    local tileWidth = self:getTileDimensions();
+
+    min.x = math.floor(-self.scrollOffset.x / tileWidth)
+    max.x = min.x + math.floor(love.graphics.getWidth() / tileWidth)
+
+    print(min.x, "/" ,max.x)
+    return min, max
+end
+
+
 
 function Grid:drawTiles()
     local tileWidth, tileHeight = self:getTileDimensions()
