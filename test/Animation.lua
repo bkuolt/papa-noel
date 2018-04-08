@@ -1,52 +1,4 @@
---[[
---------------------------------------------------------
-Renderable
---------------------------------------------------------]]
-local Sprite = {}
-
-function newSprite(filename)
-    local sprite = {
-        image = love.graphics.newImage(filename),
-        scale = { x = 1.0, y = 1.0 },
-        position = { x = 0, y = 0 }
-    }
-
-    local imageWidth, imageHeight = sprite.image:getDimensions()
-    assert(imageWidth ~= 0 and imageHeight ~= 0, "invalid image dimensions")
-    
-    setmetatable(sprite, {__index = Sprite })
-    return sprite
-end
-
-function Sprite:setPosition(x, y)
-    self.position.x = x
-    self.position.y = y
-end
-
-function Sprite:setSize(width, height)
-    assert(width ~= nil and height ~= nil and width > 0 and height > 0, "invalid sprite size")
-
-    local imageWidth, imageHeight = self.image:getDimensions()
-    self.scale.x = width / imageWidth
-    self.scale.y = height / imageHeight
-end
-
-function Sprite:draw()
-    love.graphics.draw(self.image, self.position.x, self.position.y, 0, self.scale.x, self.scale.y)
-end
-
-function Sprite:getPosition()
-    return self.position.x, self.position.y
-end
-
-function Sprite:getDimensions()
-    local imageWidth, imageHeight = self.image:getDimensions()
-    return imageWidth * self.scale.x, imageHeight * self.scale.y
-end
-
-function Sprite:getImage()
-    return self.image
-end
+require("test/Sprite")
 
 --[[
 --------------------------------------------------------
@@ -70,7 +22,6 @@ local animationShader = love.graphics.newShader([[
 
 function Animation.create()
     local animation = {
-        flipped = false,
         running = false,
         paused = false,
         fps = 0,
@@ -97,16 +48,49 @@ end
 function Animation:play()
     self.running = true
     self.paused = false
-    self.startTime = love.timer.getTime()
+    self:updateRunDuration(0)
+end
+
+function Animation:stop()
+    self.running = false
+    self.paused = false
+end
+
+function Animation:updateRunDuration(duration)
+    if duration ~= nil then
+        self.runDuration = 0
+        self.lastTimestamp = love.timer.getTime()
+    end
+    if not self.paused then 
+        self.runDuration = self.runDuration + (love.timer.getTime() - self.lastTimestamp)
+        self.lastTimestamp = love.timer.getTime()
+    end
 end
 
 function Animation:pause()
+    if not self:isRunning() then
+        self:play()
+    end
+
+    self:updateRunDuration()
     self.paused = true
-    self.startTime = love.timer.getTime()
 end
 
 function Animation:unpause()
-    -- TODO
+    if not self:isPaused() then
+        return
+    end
+
+    self.paused = false
+    self:updateRunDuration()
+end
+
+function Animation:isPaused()
+    return self.paused
+end
+
+function Animation:isRunning()
+    return self.running
 end
 
 function Animation:flip()
@@ -125,17 +109,13 @@ function Animation:setSize(width, height)
     end
 end
 
-function Animation:isFlipped()
-    return self.flipped
-end
-
 --[[
 @return index of the current frame, index of the following frame, tween factor 
 ]]
 function Animation:getCurrentFrames() -- TODO: handle pause
-    local delta = love.timer.getTime() - self.startTime
+    self:updateRunDuration()
 
-    local currentFrameIndex, tweenFactor = math.modf(delta * self.fps)
+    local currentFrameIndex, tweenFactor = math.modf(self.runDuration * self.fps)
     currentFrameIndex = currentFrameIndex % #self.frames
     local nextFrameIndex = (currentFrameIndex + 1) % #self.frames
 
@@ -167,7 +147,28 @@ function LoadAnimation(filename, frameCount, fps)
 
     for index = 1, frameCount do 
         local filename = string.format(filename, index)
-        animation:addFrame(newSprite(filename))
+        animation:addFrame(newSprite(love.graphics.newImage(filename)))
+    end
+
+    animation:setFPS(fps)
+    return animation
+end
+
+
+-- start is 1
+function LoadCoin(frameCount, fps)
+    local animation = Animation.create()
+    local image = love.graphics.newImage("test/coin.png")
+    
+    local width  = image:getWidth() / frameCount
+    local height = image:getHeight()
+    
+
+    for index = 1, frameCount do
+  
+        local quad = love.graphics.newQuad((index-1) * width, 0, width, height,  image:getDimensions()) 
+  
+        animation:addFrame(newSprite(image, quad))
     end
 
     animation:setFPS(fps)
