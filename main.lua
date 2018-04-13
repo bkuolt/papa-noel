@@ -1,7 +1,18 @@
 require "test/Animation"
 
 
-local animation = LoadCoin(14, 10) -- LoadAnimation("test/animations/Idle (%u).png", 16, 15)
+function getFilename(index)
+        local indexString
+        if index < 10 then
+            indexString = string.format("000%d", index)
+        else
+            indexString = string.format("00%d", index)
+        end
+
+        return string.format("test/Art/Crystals/Original/Blue/gem3/%s.png", indexString)
+end
+
+local animation = LoadAnimation(getFilename, 58, 15)
 
 function love.keypressed(key, scancode, isrepeat)
     if key == "p" then 
@@ -18,5 +29,5 @@ function love.load()
 end
 
 function love.draw()
-    animation:draw()
+    animation:draw(0,0, 100,100)
 end

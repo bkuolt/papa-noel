@@ -1,54 +1,84 @@
 --[[
 --------------------------------------------------------
-Renderable
+Sprite
 --------------------------------------------------------]]
 local Sprite = {}
 
 function newSprite(image, quad)
+    local imageWidth, imageHeight = image:getDimensions()
+    assert(imageWidth and imageHeight, "invalid image dimensions")
+
     local sprite = {
         image = image,
-        quad = quad,
-        scale = { x = 1.0, y = 1.0 },
-        position = { x = 0, y = 0 }
+        quad = quad
     }
 
-    local imageWidth, imageHeight = sprite.image:getDimensions()
-    assert(imageWidth ~= 0 and imageHeight ~= 0, "invalid image dimensions")
-    
     setmetatable(sprite, {__index = Sprite })
     return sprite
 end
 
-function Sprite:setPosition(x, y)
-    self.position.x = x
-    self.position.y = y
+function Sprite:getImage() -- TODO: remove function
+    return self.image
 end
 
-function Sprite:setSize(width, height)
-    assert(width ~= nil and height ~= nil and width > 0 and height > 0, "invalid sprite size")
-
+function Sprite:getScaleFactor(width, height)
     local imageWidth, imageHeight = self.image:getDimensions()
-    self.scale.x = width / imageWidth
-    self.scale.y = height / imageHeight
+    return { x = width / imageWidth, 
+             y = height / imageHeight }
 end
 
-function Sprite:draw()
+function Sprite:draw(x, y, width, height)
+    assert(x and y, "invalid draw position")
+    assert(width and height and width > 0 and height > 0, "invalid draw size")
+
+    local scale = self:getScaleFactor(width, height)
+
     if self.quad then
-        love.graphics.draw(self.image, self.quad, self.position.x, self.position.y, 0, self.scale.x, self.scale.y)
+        love.graphics.draw(self.image, self.quad, x, y, 0, scale.x, scale.y)
     else
-        love.graphics.draw(self.image, self.position.x, self.position.y, 0, self.scale.x, self.scale.y)
+        love.graphics.draw(self.image, x, y, 0, scale.x, scale.y)
     end
 end
 
-function Sprite:getPosition()
-    return self.position.x, self.position.y
+--[[
+--------------------------------------------------------
+SpriteSheet
+--------------------------------------------------------]]
+local SpriteSheet = {}
+
+function newSpriteSheet(image, columns, rows)
+    local spriteSheet = {}
+
+    spriteSheet.rows = rows 
+    spriteSheet.columns = columns
+    spriteSheet.image = image
+    setmetatable(spriteSheet, {__index = SpriteSheet})
+
+    return spriteSheet
 end
 
-function Sprite:getDimensions()
+function SpriteSheet:createQuad(column, row)
     local imageWidth, imageHeight = self.image:getDimensions()
-    return imageWidth * self.scale.x, imageHeight * self.scale.y
+    local cellWidth, cellHeight = imageWidth / self.columns, imageHeight / self.rows
+    return love.graphics.newQuad(column * cellWidth, row * cellHeight, cellWidth, cellHeight, self.image:getDimensions())
 end
 
-function Sprite:getImage()
-    return self.image
+function SpriteSheet:getIndices(index)
+    return index % self.columns, 
+           math.floor(index / (self.rows * self.columns))
+end
+
+function SpriteSheet:getSprite(index)
+    return newSprite(self.image, self:createQuad(self:getIndices(index)))
+end
+
+function SpriteSheet:createAnimation(index, frameCount, fps)
+    local animation = newAnimation()
+    animation:setFPS(fps)
+
+    for i = 0, frameCount - 1 do
+        animation:addFrame(self:getSprite(index + i))
+    end
+
+    return animation
 end

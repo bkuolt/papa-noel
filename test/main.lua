@@ -1,7 +1,7 @@
 config = require("conf")
 require("Level")
 require("SaveGame")
-require("Animation")
+--require("Animation")
 LevelEditor = require("LevelEditor")
 
 function toggleMode()

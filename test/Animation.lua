@@ -1,4 +1,4 @@
-require("test/Sprite")
+require("Sprite")
 
 --[[
 --------------------------------------------------------
@@ -20,7 +20,7 @@ local animationShader = love.graphics.newShader([[
         }
     ]])
 
-function Animation.create()
+function newAnimation()
     local animation = {
         running = false,
         paused = false,
@@ -97,18 +97,6 @@ function Animation:flip()
     self.flipped = not self.flipped
 end
 
-function Animation:setPosition(x, y)
-    for sprite in pairs(self.frames) do 
-        sprite:setPosition(x, y)
-    end
-end
-
-function Animation:setSize(width, height)
-    for index, sprite in pairs(self.frames) do 
-        sprite:setSize(width, height)
-    end
-end
-
 --[[
 @return index of the current frame, index of the following frame, tween factor 
 ]]
@@ -122,7 +110,7 @@ function Animation:getCurrentFrames() -- TODO: handle pause
     return self.frames[1 + currentFrameIndex], self.frames[1 + nextFrameIndex], tweenFactor
 end
 
-function Animation:draw()
+function Animation:draw(x, y, width, height)
     if not self.running then 
         return -- nothing to render
     end
@@ -134,7 +122,7 @@ function Animation:draw()
         animationShader:send("secondFrame", nextFrame:getImage())
         animationShader:send("tweenFactor", tweenFactor)
 
-        currentFrame:draw()
+        currentFrame:draw(x, y, width, height)
     love.graphics.pop()
 end
 
@@ -142,33 +130,11 @@ end
 --------------------------------------------------------
 Helper
 --------------------------------------------------------]]
-function LoadAnimation(filename, frameCount, fps)
-    local animation = Animation.create()
+function LoadAnimation(getFilename, frameCount, fps)
+    local animation = newAnimation()
 
     for index = 1, frameCount do 
-        local filename = string.format(filename, index)
-        animation:addFrame(newSprite(love.graphics.newImage(filename)))
-    end
-
-    animation:setFPS(fps)
-    return animation
-end
-
-
--- start is 1
-function LoadCoin(frameCount, fps)
-    local animation = Animation.create()
-    local image = love.graphics.newImage("test/coin.png")
-    
-    local width  = image:getWidth() / frameCount
-    local height = image:getHeight()
-    
-
-    for index = 1, frameCount do
-  
-        local quad = love.graphics.newQuad((index-1) * width, 0, width, height,  image:getDimensions()) 
-  
-        animation:addFrame(newSprite(image, quad))
+        animation:addFrame(newSprite(love.graphics.newImage(getFilename(index))))
     end
 
     animation:setFPS(fps)

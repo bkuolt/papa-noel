@@ -36,7 +36,7 @@ function ParticleSystem:update(delta)
 
     for _, particle in pairs(self.particles) do 
         particle.y = particle.y + particle.gravity * delta
-        particle.x = particle.x + math.random(-20,20) * delta
+        particle.x = particle.x + math.random(-50, 50) * delta
 
         if particle.y >= love.graphics:getHeight() then
             self:createParticle(particle)
