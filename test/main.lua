@@ -47,8 +47,12 @@ function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
         SaveGrid(images)
         love.event.quit() -- terminate
-    elseif key == "p" then
-        -- TODO: implement pause mode
+    elseif key == "p" and config.mode == "Game" then
+        if level:isPaused() then 
+            level:unpause()
+        else
+            level:pause()
+        end
     elseif key == "space" then
         toggleMode()
     end
@@ -63,11 +67,20 @@ function love.load()
     love.graphics.setDefaultFilter("linear", "linear")
     love.mouse.setVisible(false)
 
+    local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", 30)
+    love.graphics.setFont(font)
+
     LoadLevel()
 end
 
 function love.update(delta)
     local scrollOffset = { x = 0, y = 0 }
+
+    level:update(delta)
+
+    if level:isPaused() then 
+        return 
+    end
 
     if love.keyboard.isDown("left") then
         scrollOffset.x = config.ScrollSpeed * delta
@@ -82,20 +95,42 @@ function love.update(delta)
 
     -- TODO: update mouse cursor when moving
     level:scroll(scrollOffset.x, scrollOffset.y)
-
-    level:update(delta)
 end
 
 local function PrintStatistics()
     local statistics = love.graphics.getStats()
 
-    local text = string.format("%d drawcalls (%d batched) | %d MB textures | %d FPS", 
-                               statistics.drawcalls, statistics.drawcallsbatched, statistics.texturememory / 1024^2, love.timer.getFPS())
-    love.graphics.print(text,0,0)
+    local text = string.format("%d FPS\n" ..
+                               "%d drawcalls (%d batched) \n" ..
+                               "%d textures (%d MB) \n",
+                               love.timer.getFPS(),
+                               statistics.drawcalls, statistics.drawcallsbatched, 
+                               statistics.images,statistics.texturememory / 1024^2)
+    
+    love.graphics.push("all")
+        love.graphics.setColor(255, 255, 255,255)
+        love.graphics.print(text, 10,0)
+    love.graphics.pop();
+end
+
+local function p()
+    if not level:isPaused() then
+        return 
+    end
+
+    love.graphics.push("all")
+        love.graphics.setColor(255, 0, 0, 255)
+        local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", 100)
+        love.graphics.setFont(font)
+
+        local screenWidth, screenHeight = love.graphics.getDimensions()
+        love.graphics.print("Paused", screenWidth - 250, screenHeight- 100)
+    love.graphics.pop();
 end
 
 function love.draw()
     love.graphics.clear(0, 0, 0)
     level:draw()
     PrintStatistics()
+    p()
 end

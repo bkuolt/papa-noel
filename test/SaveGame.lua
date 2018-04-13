@@ -1,4 +1,6 @@
 config = require("conf")
+require("Animation")
+
 
 function GetIndexFromImage(images, image)
     for i = 1, #images do 
@@ -65,8 +67,44 @@ local function loadTileImages(path)
     return images
 end
 
-function LoadLevel()
 
+
+-- --------------------------------
+local function LoadItemAnimation(filename, fps)
+    local getFilename = function (index)
+            local indexString
+            if index < 10 then
+                indexString = string.format("000%d", index)
+            else
+                indexString = string.format("00%d", index)
+            end
+
+            return string.format("%s/%s.png", filename, indexString)
+        end
+
+    return LoadAnimation(getFilename, 60, fps)
+end
+
+local function LoadCharacterAnimation()
+    local getFilename = function (index)
+            return string.format("animations/Idle (%s).png", index)
+        end
+
+    local anim = LoadAnimation(getFilename, 16, 12)
+    anim:play()
+    return anim   
+end
+
+
+animations = {}
+animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
+animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
+animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
+animations[3] = LoadCharacterAnimation()
+-- --------------------------------
+
+
+function LoadLevel()
     -- if not LoadLevel(images) then 
     --     level = createLevel(16, 8)
     -- end
@@ -122,5 +160,21 @@ function LoadLevel()
 
     file:close()
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
+
+    -- -----------------------------------------
+    level:setItem(-2,2, animations[2])
+    level:setItem(-1,2, animations[2])
+    level:setItem( 0,2, animations[2])
+    
+    level:setItem(-7,3, animations[1])
+    level:setItem(-6,3, animations[1])
+    level:setItem(-5,3, animations[1])
+
+    level:setItem(2,3, animations[4])
+    level:setItem(3,3, animations[4])
+    level:setItem(4,3, animations[4])
+     
+    -- ----------------------------------------- 
+
     return true
 end

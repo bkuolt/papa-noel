@@ -5,7 +5,8 @@ end
 
 local config = {
     ShowGrid = true,   -- show grid on/off
-    ScrollSpeed = 500 -- in pixels/s
+    ScrollSpeed = 500, -- in pixels/s
+    mode = "Game"
 }
 
 return config

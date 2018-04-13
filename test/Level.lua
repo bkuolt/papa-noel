@@ -1,7 +1,7 @@
 require("ParticleSystem")
 require("Grid")
-require("Animation")
-
+require("SaveGame")
+HashMap2D = require("HashMap2D")
 
 
 --[[
@@ -15,116 +15,27 @@ function createLevel(rows, columns)
         backgroundScroll = { x = 0, y = 0 },
         background = nil,
         grid = createGrid(rows, columns),
+        items = HashMap2D.create(),
+        paused = false,
         particleSystem = createParticleSystem(2000, love.graphics.newImage("a.png") ,10)
     }
     setmetatable(level, {__index = Level})
 
-    -- --------------------------------
-    level.items = {}
-    -- --------------------------------
+    level.character = animations[3] -- TODO: refactor
 
     return level
 end
 
-
--- --------------------------------
--- --------------------------------
-local function LoadItemAnimation(filename, fps)
-    local getFilename = function (index)
-            local indexString
-            if index < 10 then
-                indexString = string.format("000%d", index)
-            else
-                indexString = string.format("00%d", index)
-            end
-
-            return string.format("%s/%s.png", filename, indexString)
-        end
-
-    return LoadAnimation(getFilename, 60, fps)
-end
-
-local function LoadCharacterAnimation()
-    local getFilename = function (index)
-            return string.format("animations/Idle (%s).png", index)
-        end
-
-    local anim = LoadAnimation(getFilename, 16, 12)
-    anim:play()
-    return anim   
-end
-
-
-
-local animations = {}
-animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
-animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
-animations[3] = LoadCharacterAnimation()
-
-
-function Level:setItem(x, y,animation)
+function Level:setItem(column, row, animation)
     local item = {}
     item.animation = animation
     item.animation:play()
-    item.x = x
-    item.y = y
 
-    self.items[#self.items + 1] = item
+    self.items:add(column, row, item)
 end
-
-
-function Level:drawItems()
-
-    local tileWidth, tileHeight = self.grid:getTileDimensions()
-
-    love.graphics.push("all")
-         love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
-
-        
-
-        for _, item in ipairs(self.items) do 
-
-            item.animation:draw(item.x * tileWidth, item.y * tileHeight, tileWidth, tileHeight)
-        end
-    love.graphics.pop()
-end
-
-
-function Level:drawCharacter()
-    
-    love.graphics.push("all")
-        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
-
-    local tileWidth, tileHeight = self.grid:getTileDimensions()
-
-        animations[3]:draw(-1500,315, 450, 400)
-
-    love.graphics.pop()
-end
--- --------------------------------
--- --------------------------------
-
-
-
-
-
-local set = false
 
 function Level:setTile(column, row, tile)
     self.grid:setTile(column, row, tile)
-    
-    if set == false then
-        self:setItem(-2,2, animations[2])
-        self:setItem(-1,2, animations[2])
-        self:setItem( 0,2, animations[2])
-        
-        self:setItem(-7,3, animations[1])
-        self:setItem(-6,3, animations[1])
-        self:setItem(-5,3, animations[1])
-        
-
-        set = true
-    end
 end
 
 function Level:getTile(column, row)
@@ -149,10 +60,43 @@ function Level:scrollBackground(x)
     self.backgroundScroll.x = self.backgroundScroll.x + x
 end
 
-function Level:update(delta)
-    self.particleSystem:update(delta)
+function Level:pause()
+    self.paused = true
+
+    for y, row in pairs(self.items.values) do -- TODO: implement and use a HashMap2D iterator
+        for x, item in pairs(row) do
+            item.animation:pause()
+        end
+    end
+    self.character:pause()
 end
 
+function Level:unpause()
+    self.paused = false
+
+    for y, row in pairs(self.items.values) do -- TODO: implement and use a HashMap2D iterator
+        for x, item in pairs(row) do
+            item.animation:unpause()
+        end
+    end
+    self.character:unpause()
+end
+
+function Level:isPaused()
+    return self.paused
+end
+
+function Level:update(delta)
+   -- if not self.paused then
+        self.particleSystem:update(delta)
+  --  end
+end
+
+
+--[[
+----------------------------------------------------
+Rendering
+----------------------------------------------------]]
 function Level:drawBackground()
     local screenWidth, screenHeight = love.graphics.getDimensions()
     local imageWidth, imageHeight = self.background:getDimensions()
@@ -172,6 +116,27 @@ end
 
 function Level:drawTiles()
     self.grid:draw()
+end
+
+function Level:drawItems()
+    local tileWidth, tileHeight = self.grid:getTileDimensions()
+
+    love.graphics.push("all")
+         love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y) -- TODO: refactor
+  
+        for y, row in pairs(self.items.values) do -- TODO: implement and use a HashMap2D iterator
+            for x, item in pairs(row) do
+                item.animation:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+            end
+        end
+    love.graphics.pop()
+end
+
+function Level:drawCharacter() -- TODO: refactor function
+    love.graphics.push("all")
+        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
+        animations[3]:draw(-1500,315, 450, 400)
+    love.graphics.pop()
 end
 
 function Level:draw()
