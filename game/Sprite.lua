@@ -18,7 +18,7 @@ function newSprite(image, quad)
     return sprite
 end
 
-function Sprite:getImage() -- TODO: deprecated -> remove function
+function Sprite:getImage()
     return self.image
 end
 

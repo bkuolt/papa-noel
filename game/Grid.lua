@@ -1,75 +1,5 @@
 config = require("conf")
-
---[[
-----------------------------------------------------
-Tile iterator
-----------------------------------------------------]]
-local function getNextColumn(tiles, x, y)
-    return next(tiles[y], x)
-end
-
-local function getNextRow(tiles, y)
-    return next(tiles, y)
-end
-
-local function skipEmptyTiles(tiles, x, y)
-    if x == nil and y == nil then 
-        return 
-    end
-
-    while tiles[y][x] == nil or tiles[y][x].image == nil do
-        x, y = getNextTile(tiles, x, y)
-    end
-    
-    return x, y
-end
-
-local function getFirstTile(tiles)
-    local y = getNextRow(tiles, nil)
-    if y == nil then return end -- empty table
-    local x = getNextColumn(tiles, nil, y)
-    if x == nil then return end -- empty table
-
-    x,y = skipEmptyTiles(tiles, x, y)
-    return x, y
-end
-
-local function getNextTile(tiles, x, y)
-    x = getNextColumn(tiles, x, y)
-    if x == nil then
-        y = getNextRow(tiles, y)
-        if y == nil then return end -- iteration finished
-        x = getNextColumn(tiles, nil, y)
-        if x == nil then return end -- iteration finished
-    end
-    return x, y
-end
-
-function tiles(grid)
-    if grid == nil then 
-        return function()
-            return
-        end
-    end
-
-    -- get first tile
-    local current = {}
-    current.x, current.y = getFirstTile(grid.tiles)
-
-    return function()
-        if current.x == nil and current.y == nil then 
-            return  -- no more tiles
-        end
-
-        tmp = {}
-        tmp.x, tmp.y = current.x, current.y 
-
-        current.x, current.y = getNextTile(grid.tiles, current.x, current.y)  
-        current.x, current.y = skipEmptyTiles(grid.tiles, current.x, current.y)  
-
-        return grid.tiles[tmp.y][tmp.x], tmp.x, tmp.y
-    end
-end
+require("HashMap2D")
 
 --[[
 ----------------------------------------------------
@@ -80,13 +10,14 @@ local Grid = {}
 function createGrid(columns, rows)
     assert(columns ~= nil and rows ~= nil and columns > 0 and rows > 0, "Invalid grid size")
 
-    local grid = {
-        rows = rows,       -- maximum number of rows in the grid on the screen 
-        columns = columns, -- maximum number of columns in the grid on the screen
-        scrollOffset = { x = 0, y = 0 },
-        tiles = {}
-    }
+    local grid = {}
     setmetatable(grid, {__index = Grid})
+
+    grid.rows = rows       -- maximum number of rows in the grid on the screen 
+    grid.columns = columns -- maximum number of columns in the grid on the screen
+    grid.tiles = newHashMap2D()
+    
+    grid.scrollOffset = { x = 0, y = 0 }
 
     print("Created " ..rows.. "x" ..columns.. " grid")
     return grid
@@ -103,35 +34,25 @@ function Grid:getTileIndices(x, y)
 end
 
 function Grid:getTile(column, row)
-    assert(row ~= nil and column ~= nil, "Invalid tile indices")
-
-    if self.tiles[row] == nil or self.tiles[row][column] == nil or  self.tiles[row][column].image == nil then 
-        return nil 
-    end
-    return self.tiles[row][column]
+    return self.tiles:get(column, row)
 end
 
 function Grid:removeTile(column, row)
-    local tile = self:getTile(column, row)
-    if tile == nil then
-        return -- no tile to delete
-    end
-    self.tiles[row][column] = nil
+    return self.tiles:remove(column, row)
 end
 
-function Grid:setTile(column, row, image)
-    assert(image ~= nil, "Invalid tile image")
+function Grid:setTile(column, row, sprite)
+    local tile = {}
+    tile.sprite = sprite
 
-    self.tiles[row] = self.tiles[row] or {}
-    self.tiles[row][column] = self.tiles[row][column] or {}
-    self.tiles[row][column].image = image 
+    self.tiles:add(column, row, tile)
 end
 
 function Grid:getLimits()
     local max = { x = -math.huge }
     local min = { x =  math.huge }
     
-    for tile, x, y in tiles(self) do 
+    for tile, x, y in self.tiles:iterator() do 
         max.x = math.max(max.x, x)
         min.x = math.min(min.x, x)
     end
@@ -139,8 +60,7 @@ function Grid:getLimits()
     return min.x, max.x
 end
 
-function Grid:scroll(x, y)
-    -- TODO: perform horizontal checks
+function Grid:scroll(x, y) -- TODO: perform horizontal checks
     self.scrollOffset.x = self.scrollOffset.x + x
     self.scrollOffset.y = self.scrollOffset.y + y
 
@@ -198,11 +118,7 @@ function Grid:drawGrid()
     love.graphics.pop()
 end
 
-function Grid:isMarkedForDeletetion()
-    -- TODO
-end
-
-function Grid:getVisibleRange()
+function Grid:getVisibleRange() -- TODO: refactor
     local min = {x = 0}
     local max = {x = 0}
     
@@ -211,26 +127,18 @@ function Grid:getVisibleRange()
     min.x = math.floor(-self.scrollOffset.x / tileWidth)
     max.x = min.x + math.floor(love.graphics.getWidth() / tileWidth)
 
-    print(min.x, "/" ,max.x)
     return min, max
 end
 
---[[
-========================================================================
-TODO:
-- Rename image in sprite
-- switch to sprite usage only!
-========================================================================
-]]
 function Grid:drawTiles()
     local tileWidth, tileHeight = self:getTileDimensions()
 
     love.graphics.push()
         love.graphics.translate(self.scrollOffset.x, self.scrollOffset.y)
 
-        for tile, x, y in tiles(self) do
-            local imageWidth, imageHeight = tile.image:getDimensions()
-            tile.image:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+        for tile, x, y in self.tiles:iterator() do
+            local imageWidth, imageHeight = tile.sprite:getDimensions()
+            tile.sprite:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight) -- !!!!!!
         end
 
     love.graphics.pop()
@@ -245,4 +153,3 @@ function Grid:draw()
 end
 
 return Grid
-

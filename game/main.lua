@@ -70,7 +70,9 @@ function love.load()
     local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", 30)
     love.graphics.setFont(font)
 
-    LoadLevel()
+    if not pcall(LoadLevel) then 
+        level = createLevel(16, 8)
+    end
 end
 
 function love.update(delta)

@@ -1,3 +1,12 @@
+function GetIndexFromImage(images, image)
+    for i = 1, #images do 
+        if images[i] == image then
+            return i
+        end
+    end
+    return 0
+end
+
 --[[
 ----------------------------------------------------
 Level Editor

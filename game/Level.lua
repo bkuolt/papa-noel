@@ -1,8 +1,7 @@
 require("ParticleSystem")
 require("Grid")
 require("SaveGame")
-HashMap2D = require("HashMap2D")
-
+require("HashMap2D")
 
 --[[
 ----------------------------------------------------
@@ -15,7 +14,7 @@ function createLevel(rows, columns)
         backgroundScroll = { x = 0, y = 0 },
         background = nil,
         grid = createGrid(rows, columns),
-        items = HashMap2D.create(),
+        items = newHashMap2D(),
         paused = false,
         particleSystem = createParticleSystem(2000, love.graphics.newImage("Art/snowflake.png") ,10)
     }
@@ -63,22 +62,20 @@ end
 function Level:pause()
     self.paused = true
 
-    for y, row in pairs(self.items.values) do -- TODO: implement and use a HashMap2D iterator
-        for x, item in pairs(row) do
-            item.animation:pause()
-        end
+    for item, x, y in self.items:iterator() do
+        item.animation:pause()
     end
+
     self.character:pause()
 end
 
 function Level:unpause()
     self.paused = false
 
-    for y, row in pairs(self.items.values) do -- TODO: implement and use a HashMap2D iterator
-        for x, item in pairs(row) do
-            item.animation:unpause()
-        end
+    for item, x, y in self.items:iterator() do
+        item.animation:unpause()
     end
+
     self.character:unpause()
 end
 
@@ -87,11 +84,8 @@ function Level:isPaused()
 end
 
 function Level:update(delta)
-   -- if not self.paused then
-        self.particleSystem:update(delta)
-  --  end
+    self.particleSystem:update(delta)
 end
-
 
 --[[
 ----------------------------------------------------
@@ -124,10 +118,8 @@ function Level:drawItems()
     love.graphics.push("all")
          love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y) -- TODO: refactor
   
-        for y, row in pairs(self.items.values) do -- TODO: implement and use a HashMap2D iterator
-            for x, item in pairs(row) do
-                item.animation:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
-            end
+        for item, x, y in self.items:iterator() do
+            item.animation:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
         end
     love.graphics.pop()
 end
@@ -135,7 +127,7 @@ end
 function Level:drawCharacter() -- TODO: refactor function
     love.graphics.push("all")
         love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
-        animations[3]:draw(-1500,315, 450, 400)
+        animations[3]:draw(-1500, 315, 450, 400)
     love.graphics.pop()
 end
 

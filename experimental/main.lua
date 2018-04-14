@@ -1,5 +1,22 @@
-require "test/Animation"
-require "test/Sprite"
+--require "test/Animation"
+--require "test/Sprite"
+
+--*********************
+
+--******************
+local map = HashMap2D.create()
+
+map:add(0, 0, "A")
+map:add(1, 0, "B")
+map:add(2, 0, "C")
+
+map:add(0, 2, "D")
+
+for value, x, y in map:iterator() do
+    print(y, x, value)
+end
+
+
 
 
 local function getFilename(index)
