@@ -20,35 +20,39 @@ local animationShader = love.graphics.newShader([[
         }
     ]])
 
-function newAnimation()
+function newAnimation(spritesheet, fps)
+    assert(spritesheet, "invalid spritesheet")
+    assert(fps > 0, "invalid frames per second count")
+    
     local animation = {
         running = false,
         paused = false,
-        fps = 0,
-        scale = {x = 1.0, y = 1.0},
-        position = {x = 0, y = 0},
-        frames = {}
+        duration = 0
     }
 
     local metaTable = {__index = Animation }
     setmetatable(animation, metaTable)
+
+    animation.frames = animation:createFrames(spritesheet)
+    animation.fps = fps
+
     return animation
 end
 
-function Animation:addFrame(sprite)
-    assert(sprite ~= nil, "Invalid frame")
-    self.frames[#self.frames + 1] = sprite
-end
-
-function Animation:setFPS(fps)
-    assert(fps ~= nil and fps > 0, "Invalid frame rate")
-    self.fps = fps
+function Animation:createFrames(spritesheet)
+    local frames = {}
+    for i = 1, spritesheet:getSpriteCount() do
+        frames[i] = spritesheet:getSprite(i)
+    end
+    return frames
 end
 
 function Animation:play()
     self.running = true
     self.paused = false
-    self:updateRunDuration(0)
+
+    self.duration = 0
+    self.lastTimestamp = love.timer.getTime()
 end
 
 function Animation:stop()
@@ -56,24 +60,13 @@ function Animation:stop()
     self.paused = false
 end
 
-function Animation:updateRunDuration(duration)
-    if duration ~= nil then
-        self.runDuration = 0
-        self.lastTimestamp = love.timer.getTime()
-    end
-    if not self.paused then 
-        self.runDuration = self.runDuration + (love.timer.getTime() - self.lastTimestamp)
-        self.lastTimestamp = love.timer.getTime()
-    end
-end
-
 function Animation:pause()
     if not self:isRunning() then
-        self:play()
+        return
     end
 
-    self:updateRunDuration()
     self.paused = true
+    self.duration = self.duration + (love.timer.getTime() - self.lastTimestamp)
 end
 
 function Animation:unpause()
@@ -82,7 +75,7 @@ function Animation:unpause()
     end
 
     self.paused = false
-    self:updateRunDuration()
+    self.lastTimestamp = love.timer.getTime()
 end
 
 function Animation:isPaused()
@@ -100,10 +93,13 @@ end
 --[[
 @return index of the current frame, index of the following frame, tween factor 
 ]]
-function Animation:getCurrentFrames() -- TODO: handle pause
-    self:updateRunDuration()
+function Animation:getCurrentFrames()
+    if not self.paused then 
+        self.duration = self.duration + (love.timer.getTime() - self.lastTimestamp)
+        self.lastTimestamp = love.timer.getTime()
+    end
 
-    local currentFrameIndex, tweenFactor = math.modf(self.runDuration * self.fps)
+    local currentFrameIndex, tweenFactor = math.modf(self.duration * self.fps)
     currentFrameIndex = currentFrameIndex % #self.frames
     local nextFrameIndex = (currentFrameIndex + 1) % #self.frames
 
@@ -130,14 +126,9 @@ end
 --------------------------------------------------------
 Helper
 --------------------------------------------------------]]
-function LoadAnimation(getFilename, frameCount, fps)
-    local animation = newAnimation()
-
-    for index = 1, frameCount do 
-        animation:addFrame(newSprite(love.graphics.newImage(getFilename(index))))
-    end
-
-    animation:setFPS(fps)
+function LoadAnimation(images, fps)
+    local spriteSheet = newSpriteSheet(images)    
+    local animation = newAnimation(spriteSheet, fps)
     return animation
 end
 

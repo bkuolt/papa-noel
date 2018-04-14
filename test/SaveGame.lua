@@ -1,6 +1,6 @@
 config = require("conf")
 require("Animation")
-
+require("Sprite")
 
 function GetIndexFromImage(images, image)
     for i = 1, #images do 
@@ -31,7 +31,7 @@ GridFile = "world.data"
 function SaveGrid(images)
     assert(level.grid ~= nil, "No world to save")
     
-    local file = io.open(GridFile, "w+")
+    local file = io.open("GridFile", "w+")
     file:write(2, "\n")                            -- write version
     file:write(level.grid.rows, " ", level.grid.columns, "\n") -- write world size
     file:write(level.grid.scrollOffset.x, "\n")              -- write scroll offset
@@ -70,7 +70,7 @@ end
 
 
 -- --------------------------------
-local function LoadItemAnimation(filename, fps)
+local function LoadItemAnimation(filename, fps)    
     local getFilename = function (index)
             local indexString
             if index < 10 then
@@ -82,7 +82,12 @@ local function LoadItemAnimation(filename, fps)
             return string.format("%s/%s.png", filename, indexString)
         end
 
-    return LoadAnimation(getFilename, 60, fps)
+    local images = {}
+    for i = 1, 60 do
+        images[i] = love.graphics.newImage(getFilename(i))
+    end
+
+    return LoadAnimation(images, fps)
 end
 
 local function LoadCharacterAnimation()
@@ -90,7 +95,12 @@ local function LoadCharacterAnimation()
             return string.format("animations/Idle (%s).png", index)
         end
 
-    local anim = LoadAnimation(getFilename, 16, 12)
+    local images = {}
+    for i = 1, 16 do
+        images[i] = love.graphics.newImage(getFilename(i))
+    end
+
+    local anim = LoadAnimation(images, 12)
     anim:play()
     return anim   
 end
@@ -139,6 +149,9 @@ function LoadLevel()
     local backgroundImage = love.graphics.newImage("background.png")
     level:setBackground(backgroundImage)
 
+    -- create sprite sheet
+    local spriteSheet = newSpriteSheet(level.tileImages)
+    -------------------------
 
     -- read all saved tiles
     local tileCount = 0
@@ -152,7 +165,9 @@ function LoadLevel()
         local imageIndex = file:read("*number")
 
         -- TODO: check if world is large enough for tile
-        level:setTile(x, y, level.tileImages[imageIndex])
+--        local sprite = newSprite(level.tileImages[imageIndex])
+        level:setTile(x, y, spriteSheet:getSprite(imageIndex))
+
         tileCount = tileCount + 1
     end
 

@@ -102,10 +102,12 @@ local function PrintStatistics()
 
     local text = string.format("%d FPS\n" ..
                                "%d drawcalls (%d batched) \n" ..
-                               "%d textures (%d MB) \n",
+                               "%d textures (%d MB) \n" ..
+                               "%d canvases",
                                love.timer.getFPS(),
                                statistics.drawcalls, statistics.drawcallsbatched, 
-                               statistics.images,statistics.texturememory / 1024^2)
+                               statistics.images,statistics.texturememory / 1024^2,
+                               statistics.canvases)
     
     love.graphics.push("all")
         love.graphics.setColor(255, 255, 255,255)

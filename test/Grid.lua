@@ -215,8 +215,13 @@ function Grid:getVisibleRange()
     return min, max
 end
 
-
-
+--[[
+========================================================================
+TODO:
+- Rename image in sprite
+- switch to sprite usage only!
+========================================================================
+]]
 function Grid:drawTiles()
     local tileWidth, tileHeight = self:getTileDimensions()
 
@@ -225,8 +230,7 @@ function Grid:drawTiles()
 
         for tile, x, y in tiles(self) do
             local imageWidth, imageHeight = tile.image:getDimensions()
-            love.graphics.draw(tile.image, x * tileWidth, y * tileHeight, 0,
-                               tileWidth / imageWidth, tileHeight / imageHeight)
+            tile.image:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
         end
 
     love.graphics.pop()

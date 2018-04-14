@@ -5,6 +5,8 @@ Sprite
 local Sprite = {}
 
 function newSprite(image, quad)
+    assert(image, "invalid image or canvas")
+
     local imageWidth, imageHeight = image:getDimensions()
     assert(imageWidth and imageHeight, "invalid image dimensions")
 
@@ -20,8 +22,17 @@ function Sprite:getImage() -- TODO: deprecated -> remove function
     return self.image
 end
 
+function Sprite:getDimensions()
+    if self.quad == nil then 
+        return self.image:getDimensions()
+    end
+
+    local x, y, width, height = self.quad:getViewport()
+    return width, height
+end
+
 function Sprite:getScaleFactor(width, height)
-    local imageWidth, imageHeight = self.image:getDimensions()
+    local imageWidth, imageHeight = self:getDimensions()
     return { x = width / imageWidth, 
              y = height / imageHeight }
 end
@@ -55,8 +66,10 @@ function newSpriteSheet(images)
     spriteSheet.cellWidth, spriteSheet.cellHeight = images[1]:getDimensions()
     spriteSheet.columns, spriteSheet.rows = spriteSheet:calculateGridSize(#images, spriteSheet.cellWidth, spriteSheet.cellHeight)
 
-    spriteSheet.canvas = love.graphics.newCanvas(spriteSheet.columns * spriteSheet.cellWidth, spriteSheet.rows * spriteSheet.imageHeight)
+    spriteSheet.canvas = love.graphics.newCanvas(spriteSheet.columns * spriteSheet.cellWidth, spriteSheet.rows * spriteSheet.cellHeight)
     spriteSheet:drawToCanvas(images)
+
+    spriteSheet.sprites = spriteSheet:createSprites(#images)
 
     return spriteSheet
 end
@@ -65,11 +78,12 @@ function SpriteSheet:calculateGridSize(imageCount, imageWidth, imageHeight)
     local maximumTextureSize = love.graphics.getSystemLimits().texturesize
   
     local maxColumnCount = math.floor(maximumTextureSize / imageWidth)
-    local maxRowCount = math.floor(maximumTextureSize / imageHeight) 
+    local maxRowCount = math.floor(maximumTextureSize / imageHeight)
+    
     assert(imageCount < maxRowCount * maxColumnCount, "this system does not support large enough textures to create the spritesheet")
 
-    return math.min(maxColumnCount, imageCount), -- column count
-           math.ceil(imageCount / columns)       -- row count
+    return math.min(maxColumnCount, imageCount),  -- column count
+           math.ceil(imageCount / maxColumnCount) -- row count
 end
 
 function SpriteSheet:drawToCanvas(images)
@@ -78,15 +92,14 @@ function SpriteSheet:drawToCanvas(images)
     
     local column, row
     for i = 1, #images do
-        column, row = self:getIndices(i)
-        love.graphics.draw(images[i], column * self.cellWidth, row * self.cellHeight)
+        column, row = self:getIndices(i - 1)
+
+        local imageWidth, imageHeight = images[i]:getDimensions()
+        love.graphics.draw(images[i], column * self.cellWidth, row * self.cellHeight, 0,
+                           self.cellWidth / imageWidth, self.cellHeight / imageHeight --[[ assures that all images have the same dimensions--]])
     end
 
     love.graphics.setCanvas()
-end
-
-function SpriteSheet:createQuad(column, row)
-    return love.graphics.newQuad(column * self.cellWidth, row * self.cellHeight, self.cellWidth, self.cellHeight, self.canvas:getDimensions())
 end
 
 function SpriteSheet:getIndices(index)
@@ -94,20 +107,25 @@ function SpriteSheet:getIndices(index)
            math.floor(index / (self.rows * self.columns))
 end
 
-function SpriteSheet:getSprite(index)
-    return newSprite(self.canvas, self:createQuad(self:getIndices(index)))
+function SpriteSheet:createQuad(index)
+    local column, row = self:getIndices(index)
+    return love.graphics.newQuad(column * self.cellWidth, row * self.cellHeight, self.cellWidth, self.cellHeight, self.canvas:getDimensions())
 end
 
--- TODO: move to Animation.lua
---[[
-function SpriteSheet:createAnimation(index, frameCount, fps)
-    local animation = newAnimation()
-    animation:setFPS(fps)
+function SpriteSheet:createSprites(spriteCount)
+    local sprites = {}
 
-    for i = 0, frameCount - 1 do
-        animation:addFrame(self:getSprite(index + i))
+    for index = 1, spriteCount do
+        sprites[index] = newSprite(self.canvas, self:createQuad(index - 1))
     end
-
-    return animation
+    return sprites
 end
---]]
+
+function SpriteSheet:getSpriteCount()
+    return #self.sprites
+end
+
+function SpriteSheet:getSprite(index)
+    assert(index >= 1 and index <= self:getSpriteCount(), "invalid sprite index")
+    return self.sprites[index]
+end
