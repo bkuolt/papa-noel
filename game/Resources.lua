@@ -35,7 +35,7 @@ local function LoadCharacterAnimation()
         images[i] = love.graphics.newImage(CreateAnimationFilename(i))
     end
 
-    local animation = LoadAnimation(images, 12)
+    local animation = LoadAnimation(images, 15)
     
     animation:play()
     return animation   
@@ -67,5 +67,6 @@ animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
 animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
 animations[3] = LoadCharacterAnimation()
 
-tileImages = LoadTileImages("Art/Tiles/")
 backgroundImage = love.graphics.newImage("Art/background.png")
+
+tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))

@@ -129,3 +129,12 @@ function SpriteSheet:getSprite(index)
     assert(index >= 1 and index <= self:getSpriteCount(), "invalid sprite index")
     return self.sprites[index]
 end
+
+function SpriteSheet:getIndex(sprite)
+    for index = 1, self:getSpriteCount() do 
+        if self:getSprite(index) == sprite then
+            return index
+        end
+    end
+    return nil
+end

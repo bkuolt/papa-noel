@@ -20,7 +20,7 @@ Saving and Restoring the world
 ----------------------------------------------------]]
 local GridFile = "world.data"
 
-function SaveGrid(images)
+function SaveGrid()
     assert(level.grid ~= nil, "No world to save")
     
     local file = io.open(GridFile, "w+")
@@ -31,8 +31,9 @@ function SaveGrid(images)
     file:write(boolToNumber(config.ShowGrid), "\n")            -- write grid visibility  
 
     -- write tiles
-    for tile, x, y in tiles(level.grid) do
-        file:write(x, " ", y, " ", GetIndexFromImage(level.tileImages, tile.image.image), "\n") -- TODO: broken use Sprite class only!
+    for tile, x, y in level.grid.tiles:iterator() do
+        local tileIndex = tileMap:getIndex(tile.sprite)
+        file:write(x, " ", y, " ", tileIndex, "\n")
     end
 
     file:close()
@@ -64,12 +65,8 @@ function LoadLevel()
     -- create new grid
     level = createLevel(columns, rows)
 
-    level.tileImages = tileImages -- (Resources.lua)
+    level.tileImages = tileImages
     level:setBackground(backgroundImage)
-
-    -- create sprite sheet
-    local spriteSheet = newSpriteSheet(level.tileImages)
-    -------------------------
 
     -- read all saved tiles
     local tileCount = 0
@@ -85,7 +82,7 @@ function LoadLevel()
         -- read tile index
         local imageIndex = file:read("*number")
 
-        level:setTile(x, y, spriteSheet:getSprite(imageIndex))
+        level:setTile(x, y, tileMap:getSprite(imageIndex))
         tileCount = tileCount + 1
     end
 

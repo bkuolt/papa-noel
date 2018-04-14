@@ -1,7 +1,9 @@
 config = require("conf")
 require("Level")
 require("SaveGame")
---require("Animation")
+require("Animation")
+Resources = require("Resources")
+
 LevelEditor = require("LevelEditor")
 
 function toggleMode()
@@ -45,7 +47,7 @@ Keyboard Callbacks
 ----------------------------------------------------]]
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
-        -- SaveGrid(images) -- broken :(
+        SaveGrid()
         love.event.quit() -- terminate
     elseif key == "p" and config.mode == "Game" then
         if level:isPaused() then 
