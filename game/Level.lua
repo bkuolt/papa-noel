@@ -17,7 +17,7 @@ function createLevel(rows, columns)
         grid = createGrid(rows, columns),
         items = HashMap2D.create(),
         paused = false,
-        particleSystem = createParticleSystem(2000, love.graphics.newImage("a.png") ,10)
+        particleSystem = createParticleSystem(2000, love.graphics.newImage("Art/snowflake.png") ,10)
     }
     setmetatable(level, {__index = Level})
 

@@ -31,7 +31,7 @@ GridFile = "world.data"
 function SaveGrid(images)
     assert(level.grid ~= nil, "No world to save")
     
-    local file = io.open("GridFile", "w+")
+    local file = io.open(GridFile, "w+")
     file:write(2, "\n")                            -- write version
     file:write(level.grid.rows, " ", level.grid.columns, "\n") -- write world size
     file:write(level.grid.scrollOffset.x, "\n")              -- write scroll offset
@@ -40,7 +40,7 @@ function SaveGrid(images)
 
     -- write tiles
     for tile, x, y in tiles(level.grid) do
-        file:write(x, " ", y, " ", GetIndexFromImage(level.tileImages, tile.image), "\n")
+        file:write(x, " ", y, " ", GetIndexFromImage(level.tileImages, tile.image.image), "\n") -- TODO: broken use Sprite class only
     end
 
     file:close()
@@ -92,7 +92,7 @@ end
 
 local function LoadCharacterAnimation()
     local getFilename = function (index)
-            return string.format("animations/Idle (%s).png", index)
+            return string.format("Art/animations/Idle (%s).png", index)
         end
 
     local images = {}
@@ -145,8 +145,8 @@ function LoadLevel()
     -- create new grid
     level = createLevel(columns, rows)
 
-    level.tileImages = loadTileImages("Tiles/")
-    local backgroundImage = love.graphics.newImage("background.png")
+    level.tileImages = loadTileImages("Art/Tiles/")
+    local backgroundImage = love.graphics.newImage("Art/background.png")
     level:setBackground(backgroundImage)
 
     -- create sprite sheet

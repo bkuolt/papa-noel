@@ -45,7 +45,7 @@ Keyboard Callbacks
 ----------------------------------------------------]]
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
-        SaveGrid(images)
+        -- SaveGrid(images) -- broken :(
         love.event.quit() -- terminate
     elseif key == "p" and config.mode == "Game" then
         if level:isPaused() then 
