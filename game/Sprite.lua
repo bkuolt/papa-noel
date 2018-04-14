@@ -58,7 +58,6 @@ local SpriteSheet = {}
 
 function newSpriteSheet(images)
     assert(images, "invalid table")
-    -- TODO: assure that all images have the same dimensions
 
     local spriteSheet = {}
     setmetatable(spriteSheet, {__index = SpriteSheet})

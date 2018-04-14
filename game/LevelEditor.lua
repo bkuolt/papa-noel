@@ -7,24 +7,23 @@ local TileSelector = {
 }
 
 function TileSelector.setCurrentTile(sprite)
-    if sprite == nil then
-        TileSelector.currentSpriteIndex = 1
-        return
-    end
-    TileSelector.currentSpriteIndex = tileMap:getIndex(sprite) -- TODO: refactor
+    assert(sprite, "invalid sprite")
+    TileSelector.currentSpriteIndex = tileMap:getIndex(sprite) 
 end
 
 function TileSelector.getCurrentTile()
     return tileMap:getSprite(TileSelector.currentSpriteIndex)
 end
 
-function TileSelector.scroll(tile, scrollOffset)
+function TileSelector.scroll(tile, scrollOffset) -- TODO: something is broken
+    assert(tile, "invalid tile")
+    assert(scrollOffset, "invalid tile")
+
     TileSelector.currentSpriteIndex = (TileSelector.currentSpriteIndex + math.abs(scrollOffset)) % tileMap:getSpriteCount()
     TileSelector.currentSpriteIndex = math.max(1, TileSelector.currentSpriteIndex)
 
     tile.sprite = TileSelector.getCurrentTile()
 end
-
 
 --[[
 ----------------------------------------------------
@@ -52,7 +51,6 @@ function LevelEditor.onClick(x, y, button)
         love.mouse.setCursor(love.mouse.getSystemCursor("sizens"))
     elseif button == 2 then  -- (right click) remove tile
         level:removeTile(column, row)
-        TileSelector.setCurrentTile(nil)
         love.mouse.setCursor(love.mouse.getSystemCursor("hand"))
     end
 end

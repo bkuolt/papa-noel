@@ -3,10 +3,7 @@ require("Grid")
 require("SaveGame")
 require("HashMap2D")
 
---[[
-----------------------------------------------------
- Level
-----------------------------------------------------]]
+
 local Level = {}
 
 function createLevel(rows, columns)
@@ -25,6 +22,10 @@ function createLevel(rows, columns)
     return level
 end
 
+--[[
+----------------------------------------------------
+Editing
+----------------------------------------------------]]
 function Level:setItem(column, row, animation)
     local item = {}
     item.animation = animation
@@ -59,6 +60,10 @@ function Level:scrollBackground(x)
     self.backgroundScroll.x = self.backgroundScroll.x + x
 end
 
+--[[
+----------------------------------------------------
+Pause/Unpause
+----------------------------------------------------]]
 function Level:pause()
     self.paused = true
 
@@ -83,14 +88,14 @@ function Level:isPaused()
     return self.paused
 end
 
-function Level:update(delta)
-    self.particleSystem:update(delta)
-end
-
 --[[
 ----------------------------------------------------
 Rendering
 ----------------------------------------------------]]
+function Level:update(delta)
+    self.particleSystem:update(delta)
+end
+
 function Level:drawBackground()
     local screenWidth, screenHeight = love.graphics.getDimensions()
     local imageWidth, imageHeight = self.background:getDimensions()

@@ -2,12 +2,7 @@ TODO:
 -- pack all resoources in a table
 -- rename animations[3] to to character Anaimation
 -- refactor Level.lua, SaveGame.lua 
--- implement a Tile- and Item-Selector for LevelEditor.lua
+-- implement Item-Selector for LevelEditor.lua
 
 -- add higher level classes Tile.lua and Character.lua
 -- add culling and collision detection
-
-
-Broken features
--- SaveWorld() is broken due to switch to Sprite class (old code still depends on love.graphics.Image)
--- LevelEditor item selecting is broken due to switch to Sprite class (old code still depends on love.graphics.Image)
