@@ -1,8 +1,9 @@
 config = require("conf")
+require("Item")
 require("Animation")
 require("Sprite")
+require("Level")
 require("Resources")
-
 
 local function boolToNumber(value)
     if value == true then return 1 end
@@ -32,7 +33,7 @@ function SaveGrid()
 
     -- write tiles
     for tile, x, y in level.grid.tiles:iterator() do
-        local tileIndex = tileMap:getIndex(tile.sprite)
+        local tileIndex = Resources.tileMap:getIndex(tile.sprite)
         file:write(x, " ", y, " ", tileIndex, "\n")
     end
 
@@ -66,7 +67,7 @@ function LoadLevel()
     level = createLevel(columns, rows)
 
     level.tileImages = tileImages
-    level:setBackground(backgroundImage)
+    level:setBackground(Resources.backgroundImage)
 
     -- read all saved tiles
     local tileCount = 0
@@ -82,7 +83,7 @@ function LoadLevel()
         -- read tile index
         local imageIndex = file:read("*number")
 
-        level:setTile(x, y, tileMap:getSprite(imageIndex))
+        level:setTile(x, y, Resources.tileMap:getSprite(imageIndex))
         tileCount = tileCount + 1
     end
 
@@ -91,17 +92,31 @@ function LoadLevel()
     file:close()
 
     -- Set items
-    level:setItem(-2,2, animations[2])
-    level:setItem(-1,2, animations[2])
-    level:setItem( 0,2, animations[2])
+    local items = {}
+    items[1] = newItem(Resources.animations[1])
+    items[2] = newItem(Resources.animations[2])
+    items[3] = newItem(Resources.animations[4])
     
-    level:setItem(-7,3, animations[1])
-    level:setItem(-6,3, animations[1])
-    level:setItem(-5,3, animations[1])
 
-    level:setItem(2,3, animations[4])
-    level:setItem(3,3, animations[4])
-    level:setItem(4,3, animations[4])
-    
+    level:setItem(-7,3, items[1])
+    level:setItem(-6,3, items[1])
+    level:setItem(-5,3, items[1])
+
+    level:setItem(-2,2, items[2])
+    level:setItem(-1,2, items[2])
+    level:setItem( 0,2, items[2])
+
+    level:setItem(2,3, items[3])
+    level:setItem(3,3, items[3])
+    level:setItem(4,3, items[3])
+
+    level:setItem(-7,3, items[1])
+    level:setItem(-6,3, items[1])
+    level:setItem(-5,3, items[1])
+
+    level:setItem(2,3, items[3])
+    level:setItem(3,3, items[3])
+    level:setItem(4,3, items[3])
+
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
 end

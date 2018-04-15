@@ -61,12 +61,15 @@ local function LoadTileImages(path)
     return images
 end
 
-animations = {}
-animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
-animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
-animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
-animations[3] = LoadCharacterAnimation()
+Resources = {}
 
-backgroundImage = love.graphics.newImage("Art/background.png")
+Resources.animations = {}
+Resources.animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
+Resources.animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
+Resources.animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
+Resources.animations[3] = LoadCharacterAnimation()
 
-tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))
+Resources.particleImage = love.graphics.newImage("Art/snowflake.png") 
+Resources.backgroundImage = love.graphics.newImage("Art/background.png")
+
+Resources.tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))

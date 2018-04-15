@@ -1,8 +1,6 @@
 require("ParticleSystem")
 require("Grid")
-require("SaveGame")
 require("HashMap2D")
-
 
 local Level = {}
 
@@ -13,11 +11,9 @@ function createLevel(rows, columns)
         grid = createGrid(rows, columns),
         items = newHashMap2D(),
         paused = false,
-        particleSystem = createParticleSystem(2000, love.graphics.newImage("Art/snowflake.png") ,10)
+        particleSystem = createParticleSystem(2000, Resources.particleImage ,10)
     }
     setmetatable(level, {__index = Level})
-
-    level.character = animations[3] -- TODO: refactor
 
     return level
 end
@@ -26,12 +22,9 @@ end
 ----------------------------------------------------
 Editing
 ----------------------------------------------------]]
-function Level:setItem(column, row, animation)
-    local item = {}
-    item.animation = animation
-    item.animation:play()
-
+function Level:setItem(column, row, item)
     self.items:add(column, row, item)
+    item:getAnimation():play()
 end
 
 function Level:setTile(column, row, tile)
@@ -68,7 +61,7 @@ function Level:pause()
     self.paused = true
 
     for item, x, y in self.items:iterator() do
-        item.animation:pause()
+        item:getAnimation():pause()
     end
 
     self.character:pause()
@@ -78,7 +71,7 @@ function Level:unpause()
     self.paused = false
 
     for item, x, y in self.items:iterator() do
-        item.animation:unpause()
+        item:getAnimation():unpause()
     end
 
     self.character:unpause()
@@ -124,7 +117,7 @@ function Level:drawItems()
          love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y) -- TODO: refactor
   
         for item, x, y in self.items:iterator() do
-            item.animation:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+            item:getAnimation():draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
         end
     love.graphics.pop()
 end
@@ -132,7 +125,7 @@ end
 function Level:drawCharacter() -- TODO: refactor function
     love.graphics.push("all")
         love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
-        animations[3]:draw(-1500, 315, 450, 400)
+        Resources.animations[3]:draw(-1500, 315, 450, 400)
     love.graphics.pop()
 end
 

@@ -8,7 +8,7 @@ local TileSelector = {
 
 function TileSelector.setCurrentTile(sprite)
     assert(sprite, "invalid sprite")
-    TileSelector.currentSpriteIndex = tileMap:getIndex(sprite) 
+    TileSelector.currentSpriteIndex = Resources.tileMap:getIndex(sprite) 
 end
 
 function TileSelector.getCurrentTile()
@@ -19,7 +19,7 @@ function TileSelector.scroll(tile, scrollOffset) -- TODO: something is broken
     assert(tile, "invalid tile")
     assert(scrollOffset, "invalid tile")
 
-    TileSelector.currentSpriteIndex = (TileSelector.currentSpriteIndex + math.abs(scrollOffset)) % tileMap:getSpriteCount()
+    TileSelector.currentSpriteIndex = (TileSelector.currentSpriteIndex + math.abs(scrollOffset)) % Resources.tileMap:getSpriteCount()
     TileSelector.currentSpriteIndex = math.max(1, TileSelector.currentSpriteIndex)
 
     tile.sprite = TileSelector.getCurrentTile()

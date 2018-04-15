@@ -1,9 +1,12 @@
+require "script"
+print("Main: ", Image)
+
 --require "test/Animation"
 --require "test/Sprite"
 
 --*********************
 
---******************
+--[[
 local map = HashMap2D.create()
 
 map:add(0, 0, "A")
@@ -71,3 +74,4 @@ function love.draw()
 
     animation:draw(0,0, 100,100)
 end
+--]]

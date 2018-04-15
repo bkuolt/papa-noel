@@ -34,7 +34,7 @@ function HashMap2D:remove(x, y)
     self.size = self.size - 1
 end
 
-function HashMap2D:size()
+function HashMap2D:getSize()
     return self.size
 end
 

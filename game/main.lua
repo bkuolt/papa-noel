@@ -1,9 +1,9 @@
 config = require("conf")
-require("Level")
-require("SaveGame")
+require("Sprite")
 require("Animation")
-Resources = require("Resources")
-
+require("SaveGame")
+require("Resources")
+require("Level")
 LevelEditor = require("LevelEditor")
 
 function toggleMode()
@@ -136,6 +136,7 @@ end
 
 function love.draw()
     love.graphics.clear(0, 0, 0)
+    
     level:draw()
     PrintStatistics()
     p()
