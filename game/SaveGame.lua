@@ -5,6 +5,7 @@ require("Sprite")
 require("Level")
 require("Resources")
 
+
 local function boolToNumber(value)
     if value == true then return 1 end
     return 0
@@ -47,7 +48,7 @@ function LoadLevel()
     local file = io.open(GridFile, "r")
     assert(file, "no world exists to load");
     
-    local version = file:read("*number") -- read version 
+    local version = file:read("*number") -- read version
     local rows = file:read("*number")    -- read grid size
     local columns = file:read("*number")
     local scrollOffset = {               -- read scroll offset
@@ -67,6 +68,7 @@ function LoadLevel()
     level = createLevel(columns, rows)
 
     level.tileImages = tileImages
+
     level:setBackground(Resources.backgroundImage)
 
     -- read all saved tiles
@@ -92,31 +94,28 @@ function LoadLevel()
     file:close()
 
     -- Set items
-    local items = {}
-    items[1] = newItem(Resources.animations[1])
-    items[2] = newItem(Resources.animations[2])
-    items[3] = newItem(Resources.animations[4])
-    
+    level:setItem(-7,3, newItem(Resources.animations[1]))
+    level:setItem(-6,3, newItem(Resources.animations[1]))
+    level:setItem(-5,3, newItem(Resources.animations[1]))
 
-    level:setItem(-7,3, items[1])
-    level:setItem(-6,3, items[1])
-    level:setItem(-5,3, items[1])
+    level:setItem(-2,2, newItem(Resources.animations[2]))
+    level:setItem(-1,2, newItem(Resources.animations[2]))
+    level:setItem( 0,2, newItem(Resources.animations[2]))
 
-    level:setItem(-2,2, items[2])
-    level:setItem(-1,2, items[2])
-    level:setItem( 0,2, items[2])
+    level:setItem(2,3, newItem(Resources.animations[4]))
+    level:setItem(3,3, newItem(Resources.animations[4]))
+    level:setItem(4,3, newItem(Resources.animations[4]))
 
-    level:setItem(2,3, items[3])
-    level:setItem(3,3, items[3])
-    level:setItem(4,3, items[3])
+    level:setItem(-7,3, newItem(Resources.animations[1]))
+    level:setItem(-6,3, newItem(Resources.animations[1]))
+    level:setItem(-5,3, newItem(Resources.animations[1]))
 
-    level:setItem(-7,3, items[1])
-    level:setItem(-6,3, items[1])
-    level:setItem(-5,3, items[1])
-
-    level:setItem(2,3, items[3])
-    level:setItem(3,3, items[3])
-    level:setItem(4,3, items[3])
+    level:setItem(2,3, newItem(Resources.animations[4]))
+    level:setItem(3,3, newItem(Resources.animations[4]))
+    level:setItem(4,3, newItem(Resources.animations[4]))
+    -- HOW TO HARCODE
 
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
+
+    return true
 end

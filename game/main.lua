@@ -72,7 +72,10 @@ function love.load()
     local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", 30)
     love.graphics.setFont(font)
 
-    if not pcall(LoadLevel) then 
+    if not LoadLevel() then 
+        
+        --print("===================> Fehler beiim Laden")
+        exit()
         level = createLevel(16, 8)
     end
 end

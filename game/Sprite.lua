@@ -75,10 +75,10 @@ end
 
 function SpriteSheet:calculateGridSize(imageCount, imageWidth, imageHeight)
     local maximumTextureSize = love.graphics.getSystemLimits().texturesize
-  
+
     local maxColumnCount = math.floor(maximumTextureSize / imageWidth)
     local maxRowCount = math.floor(maximumTextureSize / imageHeight)
-    
+
     assert(imageCount < maxRowCount * maxColumnCount, "this system does not support large enough textures to create the spritesheet")
 
     return math.min(maxColumnCount, imageCount),  -- column count
@@ -88,7 +88,7 @@ end
 function SpriteSheet:drawToCanvas(images)
     love.graphics.setCanvas(self.canvas)
     love.graphics.clear(0.0, 0.0, 0.0, 0.0)
-    
+
     local column, row
     for i = 1, #images do
         column, row = self:getIndices(i - 1)
@@ -130,7 +130,7 @@ function SpriteSheet:getSprite(index)
 end
 
 function SpriteSheet:getIndex(sprite)
-    for index = 1, self:getSpriteCount() do 
+    for index = 1, self:getSpriteCount() do
         if self:getSprite(index) == sprite then
             return index
         end

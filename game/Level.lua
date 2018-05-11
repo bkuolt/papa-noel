@@ -1,6 +1,11 @@
 require("ParticleSystem")
 require("Grid")
 require("HashMap2D")
+require("Resources")
+
+print("Res.Back:")
+print(Resources)
+print(Resources.backgroundImage)
 
 local Level = {}
 
@@ -11,10 +16,14 @@ function createLevel(rows, columns)
         grid = createGrid(rows, columns),
         items = newHashMap2D(),
         paused = false,
-        particleSystem = createParticleSystem(2000, Resources.particleImage ,10)
+        particleSystem = createParticleSystem(2000, Resources.particleImage ,10),
+
+        animation = {}
     }
     setmetatable(level, {__index = Level})
 
+    level.character = Resources.animations[3]
+    
     return level
 end
 
@@ -23,8 +32,14 @@ end
 Editing
 ----------------------------------------------------]]
 function Level:setItem(column, row, item)
-    self.items:add(column, row, item)
+    -- ITEM sollte hier ezeugt werden! Der user soll nicht wissen,dass es eine Item klasse gibt
+    local tileWidth, tileHeight = self.grid:getTileDimensions()
+
+    item:setSize(tileWidth, tileHeight)
+    item:setPosition(tileWidth * column, tileHeight * row)
     item:getAnimation():play()
+
+    self.items:add(column, row, item)
 end
 
 function Level:setTile(column, row, tile)
@@ -92,7 +107,7 @@ end
 function Level:drawBackground()
     local screenWidth, screenHeight = love.graphics.getDimensions()
     local imageWidth, imageHeight = self.background:getDimensions()
-    
+
     love.graphics.push()
         local translation = self.backgroundScroll.x % screenWidth
 
@@ -111,21 +126,20 @@ function Level:drawTiles()
 end
 
 function Level:drawItems()
-    local tileWidth, tileHeight = self.grid:getTileDimensions()
-
     love.graphics.push("all")
-         love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y) -- TODO: refactor
-  
-        for item, x, y in self.items:iterator() do
-            item:getAnimation():draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight)
+        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y) -- TODO: refactor
+
+        for item in self.items:iterator() do
+            item:draw();
         end
+
     love.graphics.pop()
 end
 
 function Level:drawCharacter() -- TODO: refactor function
     love.graphics.push("all")
         love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
-        Resources.animations[3]:draw(-1500, 315, 450, 400)
+        self.character:draw(-1500, 315, 450, 400)
     love.graphics.pop()
 end
 
