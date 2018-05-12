@@ -8,4 +8,8 @@ function newTile(sprite)
     return tile
 end
 
+function Tile:draw()
+-- TODO
+end
+
 -- TODO

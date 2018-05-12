@@ -16,14 +16,15 @@ function createLevel(rows, columns)
         grid = createGrid(rows, columns),
         items = newHashMap2D(),
         paused = false,
-        particleSystem = createParticleSystem(2000, Resources.particleImage ,10),
+        particleSystem = createParticleSystem(2000, Resources.particleImage, 10),
 
-        animation = {}
+        animations = {}
     }
     setmetatable(level, {__index = Level})
 
     level.character = Resources.animations[3]
-    
+    table.insert(level.animations, level.character)
+
     return level
 end
 
@@ -31,19 +32,19 @@ end
 ----------------------------------------------------
 Editing
 ----------------------------------------------------]]
-function Level:setItem(column, row, item)
-    -- ITEM sollte hier ezeugt werden! Der user soll nicht wissen,dass es eine Item klasse gibt
+function Level:setItem(column, row, animation)
     local tileWidth, tileHeight = self.grid:getTileDimensions()
 
-    item:setSize(tileWidth, tileHeight)
-    item:setPosition(tileWidth * column, tileHeight * row)
-    item:getAnimation():play()
+    local item = newItem(tileWidth * column, tileHeight * row,
+                         tileWidth, tileHeight,
+                         animation)
 
+    table.insert(self.animations, animation)
     self.items:add(column, row, item)
 end
 
 function Level:setTile(column, row, tile)
-    self.grid:setTile(column, row, tile)
+    self.grid:setTile(column, row, tile) -- TODO: Refactor
 end
 
 function Level:getTile(column, row)
@@ -72,24 +73,24 @@ end
 ----------------------------------------------------
 Pause/Unpause
 ----------------------------------------------------]]
+function Level:start()
+    for _, animation in pairs(self.animations) do
+        animation:play()
+    end
+end
+
 function Level:pause()
     self.paused = true
-
-    for item, x, y in self.items:iterator() do
-        item:getAnimation():pause()
+    for _, animation in pairs(self.animations) do
+        animation:pause()
     end
-
-    self.character:pause()
 end
 
 function Level:unpause()
     self.paused = false
-
-    for item, x, y in self.items:iterator() do
-        item:getAnimation():unpause()
+    for _, animation in pairs(self.animations) do
+        animation:unpause()
     end
-
-    self.character:unpause()
 end
 
 function Level:isPaused()

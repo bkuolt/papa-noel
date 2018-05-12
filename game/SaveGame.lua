@@ -92,27 +92,28 @@ function LoadLevel()
     level:scroll(scrollOffset.x, scrollOffset.y)
 
     file:close()
+    -- TODO: Also save items
 
     -- Set items
-    level:setItem(-7,3, newItem(Resources.animations[1]))
-    level:setItem(-6,3, newItem(Resources.animations[1]))
-    level:setItem(-5,3, newItem(Resources.animations[1]))
+    level:setItem(-7,3, Resources.animations[1])
+    level:setItem(-6,3, Resources.animations[1])
+    level:setItem(-5,3, Resources.animations[1])
 
-    level:setItem(-2,2, newItem(Resources.animations[2]))
-    level:setItem(-1,2, newItem(Resources.animations[2]))
-    level:setItem( 0,2, newItem(Resources.animations[2]))
+    level:setItem(-2,2, Resources.animations[2])
+    level:setItem(-1,2, Resources.animations[2])
+    level:setItem( 0,2, Resources.animations[2])
 
-    level:setItem(2,3, newItem(Resources.animations[4]))
-    level:setItem(3,3, newItem(Resources.animations[4]))
-    level:setItem(4,3, newItem(Resources.animations[4]))
+    level:setItem(2,3, Resources.animations[4])
+    level:setItem(3,3, Resources.animations[4])
+    level:setItem(4,3, Resources.animations[4])
 
-    level:setItem(-7,3, newItem(Resources.animations[1]))
-    level:setItem(-6,3, newItem(Resources.animations[1]))
-    level:setItem(-5,3, newItem(Resources.animations[1]))
+    level:setItem(-7,3, Resources.animations[1])
+    level:setItem(-6,3, Resources.animations[1])
+    level:setItem(-5,3, Resources.animations[1])
 
-    level:setItem(2,3, newItem(Resources.animations[4]))
-    level:setItem(3,3, newItem(Resources.animations[4]))
-    level:setItem(4,3, newItem(Resources.animations[4]))
+    level:setItem(2,3, Resources.animations[4])
+    level:setItem(3,3, Resources.animations[4])
+    level:setItem(4,3, Resources.animations[4])
     -- HOW TO HARCODE
 
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))

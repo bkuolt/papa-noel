@@ -30,3 +30,5 @@ end
 function BoundingBox:draw()
     love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height)
 end
+
+-- TODO: create bounding box from sprite

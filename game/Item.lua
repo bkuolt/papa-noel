@@ -2,8 +2,9 @@ require("BoundingBox")
 
 local Item = {}
 
-function newItem(
-    --[[ x, y, width, height, --]]animation, onCollect)
+function newItem(x, y, width, height, animation, onCollect)
+    assert(x and y and width > 0 and height > 0 and animation, "One or more item properties are invalid")
+
     local item = {}
     setmetatable(item, {__index = Item})
 
@@ -14,22 +15,8 @@ function newItem(
     return item
 end
 
-function Item:setPosition(x, y)
-    self.boundingBox.position.x = x;
-    self.boundingBox.position.y = y;
-end
-
-function Item:setSize(width, height)
-    self.boundingBox.width = width;
-    self.boundingBox.height = height;
-end
-
 function Item:draw()
     self.animation:draw(self.boundingBox.position.x, self.boundingBox.position.y,
                         self.boundingBox.width, self.boundingBox.height)
     self.boundingBox:draw()
-end
-
-function Item:getAnimation() -- TODO?
-    return self.animation
 end

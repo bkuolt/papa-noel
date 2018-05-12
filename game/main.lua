@@ -78,6 +78,7 @@ function love.load()
         exit()
         level = createLevel(16, 8)
     end
+    level:start()
 end
 
 function love.update(delta)
