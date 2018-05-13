@@ -4,7 +4,7 @@ require("Sprite")
 --------------------------------------------------------
 Animation
 --------------------------------------------------------]]
-Animation = {}
+local Animation = {}
 
 local animationShader = love.graphics.newShader([[
         uniform sampler2D secondFrame;
@@ -15,7 +15,7 @@ local animationShader = love.graphics.newShader([[
             vec4 texels[2];
             texels[0] = Texel(firstFrame, textureCoords);
             texels[1] = Texel(secondFrame, textureCoords);
-            
+
             return texels[0] + (texels[1] - texels[0]) * tweenFactor;
         }
     ]])
@@ -23,7 +23,7 @@ local animationShader = love.graphics.newShader([[
 function newAnimation(spritesheet, fps)
     assert(spritesheet, "invalid spritesheet")
     assert(fps > 0, "invalid frames per second count")
-    
+
     local animation = {
         running = false,
         paused = false,
@@ -91,7 +91,7 @@ function Animation:flip()
 end
 
 --[[
-@return index of the current frame, index of the following frame, tween factor 
+@return index of the current frame, index of the following frame, tween factor
 ]]
 function Animation:getCurrentFrames()
     if not self.paused then 
@@ -107,12 +107,12 @@ function Animation:getCurrentFrames()
 end
 
 function Animation:draw(x, y, width, height)
-    if not self.running then 
+    if not self.running then
         return -- nothing to render
     end
 
     local currentFrame, nextFrame, tweenFactor = self:getCurrentFrames()
- 
+
     love.graphics.push("all")
         love.graphics.setShader(animationShader)
         animationShader:send("secondFrame", nextFrame:getImage())
@@ -127,9 +127,7 @@ end
 Helper
 --------------------------------------------------------]]
 function LoadAnimation(images, fps)
-    local spriteSheet = newSpriteSheet(images)    
+    local spriteSheet = newSpriteSheet(images)
     local animation = newAnimation(spriteSheet, fps)
     return animation
 end
-
-return Animation

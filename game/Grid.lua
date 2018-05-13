@@ -1,5 +1,7 @@
 config = require("conf")
 require("HashMap2D")
+require("Item") -- Tile statt Item
+
 
 --[[
 ----------------------------------------------------
@@ -16,7 +18,7 @@ function createGrid(columns, rows)
     grid.rows = rows       -- maximum number of rows in the grid on the screen 
     grid.columns = columns -- maximum number of columns in the grid on the screen
     grid.tiles = newHashMap2D()
-    
+
     grid.scrollOffset = { x = 0, y = 0 }
 
     print("Created " ..rows.. "x" ..columns.. " grid")
@@ -33,26 +35,11 @@ function Grid:getTileIndices(x, y)
     return math.floor((x - self.scrollOffset.x) / tileWidth), math.floor((y - self.scrollOffset.y) / tileHeight)
 end
 
-function Grid:getTile(column, row)
-    return self.tiles:get(column, row)
-end
-
-function Grid:removeTile(column, row)
-    return self.tiles:remove(column, row)
-end
-
-function Grid:setTile(column, row, sprite)
-    local tile = {}
-    tile.sprite = sprite
-
-    self.tiles:add(column, row, tile)
-end
-
-function Grid:getLimits()
+function Grid:getLimits(tiles)
     local max = { x = -math.huge }
     local min = { x =  math.huge }
-    
-    for tile, x, y in self.tiles:iterator() do 
+
+    for tile, x, y in tiles:iterator() do
         max.x = math.max(max.x, x)
         min.x = math.min(min.x, x)
     end
@@ -60,7 +47,7 @@ function Grid:getLimits()
     return min.x, max.x
 end
 
-function Grid:scroll(x, y) -- TODO: perform horizontal checks
+function Grid:scroll(tiles, x, y) -- TODO: perform horizontal checks
     self.scrollOffset.x = self.scrollOffset.x + x
     self.scrollOffset.y = self.scrollOffset.y + y
 
@@ -68,8 +55,8 @@ function Grid:scroll(x, y) -- TODO: perform horizontal checks
         return true -- no need for checks in Editor mode
     end
 
-    local firstTileIndex, lastTileIndex = self:getLimits()
-   
+    local firstTileIndex, lastTileIndex = self:getLimits(tiles)
+
     if firstTileIndex ~= nil then
         local tileWidth = self:getTileDimensions()
         local screenWidth = self.columns * tileWidth
@@ -85,7 +72,7 @@ function Grid:scroll(x, y) -- TODO: perform horizontal checks
             self.scrollOffset.x = -firstTilePosition
             return false
         end
-        
+
         --[[
            ---------=========
            | World | Screen |
@@ -96,7 +83,7 @@ function Grid:scroll(x, y) -- TODO: perform horizontal checks
             return false
         end
     end
-    
+
     return true
 end
 
@@ -106,7 +93,7 @@ function Grid:drawGrid()
     love.graphics.push("all")
         love.graphics.setLineWidth(1)
         love.graphics.setColor(0.5, 0.5, 0.5)
-        
+
         love.graphics.origin()
         love.graphics.translate(self.scrollOffset.x % tileWidth, self.scrollOffset.y % tileHeight)
 
@@ -116,40 +103,6 @@ function Grid:drawGrid()
             end
         end
     love.graphics.pop()
-end
-
-function Grid:getVisibleRange() -- TODO: refactor
-    local min = {x = 0}
-    local max = {x = 0}
-    
-    local tileWidth = self:getTileDimensions();
-
-    min.x = math.floor(-self.scrollOffset.x / tileWidth)
-    max.x = min.x + math.floor(love.graphics.getWidth() / tileWidth)
-
-    return min, max
-end
-
-function Grid:drawTiles()
-    local tileWidth, tileHeight = self:getTileDimensions()
-
-    love.graphics.push()
-        love.graphics.translate(self.scrollOffset.x, self.scrollOffset.y)
-
-        for tile, x, y in self.tiles:iterator() do
-            local imageWidth, imageHeight = tile.sprite:getDimensions()
-            tile.sprite:draw(x * tileWidth, y * tileHeight, tileWidth, tileHeight) -- !!!!!!
-        end
-
-    love.graphics.pop()
-end
-
-function Grid:draw()
-    if config.ShowGrid then
-        self:drawGrid()
-    end
-
-    self:drawTiles()
 end
 
 return Grid

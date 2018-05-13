@@ -18,49 +18,58 @@ function createLevel(rows, columns)
         paused = false,
         particleSystem = createParticleSystem(2000, Resources.particleImage, 10),
 
-        animations = {}
+        animations = {},
+        tiles = newHashMap2D()
     }
     setmetatable(level, {__index = Level})
 
-    level.character = Resources.animations[3]
-    table.insert(level.animations, level.character)
+
+    level.character = Resources.animations[3]                          -- Refactor
+    table.insert(level.animations, level.character)                    -- Refactor
+    level.tileWidth, level.tileHeight = level.grid:getTileDimensions() -- Refactor
 
     return level
 end
 
 --[[
 ----------------------------------------------------
-Editing
+Level content creation/retrieval
 ----------------------------------------------------]]
 function Level:setItem(column, row, animation)
-    local tileWidth, tileHeight = self.grid:getTileDimensions()
-
-    local item = newItem(tileWidth * column, tileHeight * row,
-                         tileWidth, tileHeight,
+    local item = newItem(self.tileWidth * column, self.tileHeight * row,
+                         self.tileWidth, self.tileHeight,
                          animation)
 
     table.insert(self.animations, animation)
     self.items:add(column, row, item)
 end
 
-function Level:setTile(column, row, tile)
-    self.grid:setTile(column, row, tile) -- TODO: Refactor
+function Level:setTile(column, row, sprite)
+    local tile = newItem(self.tileWidth * column, self.tileHeight * row,
+                         self.tileWidth, self.tileHeight,
+                         sprite)
+    self.tiles:add(column, row, tile)
 end
 
 function Level:getTile(column, row)
-    return self.grid:getTile(column, row)
+   return self.tiles:get(column, row)
 end
 
 function Level:removeTile(column, row)
-    return self.grid:removeTile(column, row)
+    return self.tiles:removeTile(column, row)
 end
 
 function Level:setBackground(image)
     self.background = image
 end
 
+
+--[[
+----------------------------------------------------
+Scrolling
+----------------------------------------------------]]
 function Level:scroll(x, y)
-    if self.grid:scroll(x, y) then 
+    if self.grid:scroll(self.tiles, x, y) then
         self:scrollBackground(x / 2)
     end
 end
@@ -71,7 +80,7 @@ end
 
 --[[
 ----------------------------------------------------
-Pause/Unpause
+State management
 ----------------------------------------------------]]
 function Level:start()
     for _, animation in pairs(self.animations) do
@@ -123,31 +132,35 @@ function Level:drawSnow()
 end
 
 function Level:drawTiles()
-    self.grid:draw()
+    if config.ShowGrid then
+        self.grid:drawGrid()
+    end
+
+    for tile in self.tiles:iterator() do
+        tile:draw()
+    end
 end
 
 function Level:drawItems()
-    love.graphics.push("all")
-        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y) -- TODO: refactor
-
-        for item in self.items:iterator() do
-            item:draw();
-        end
-
-    love.graphics.pop()
+    for item in self.items:iterator() do
+        item:draw();
+    end
 end
 
 function Level:drawCharacter() -- TODO: refactor function
-    love.graphics.push("all")
-        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
-        self.character:draw(-1500, 315, 450, 400)
-    love.graphics.pop()
+    self.character:draw(-1500, 315, 450, 400)
 end
 
 function Level:draw()
     self:drawBackground()
     self:drawSnow()
-    self:drawTiles()
-    self:drawItems()
-    self:drawCharacter()
+
+    love.graphics.push("all")
+        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
+
+        self:drawTiles()
+        self:drawItems()
+        self:drawCharacter()
+
+    love.graphics.pop()
 end

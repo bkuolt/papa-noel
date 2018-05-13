@@ -1,22 +1,47 @@
 require("BoundingBox")
 
-local Item = {}
+--[[
+--------------------------------------------------------
+Animation
+--------------------------------------------------------]]
+local GameObject = {}
 
-function newItem(x, y, width, height, animation, onCollect)
-    assert(x and y and width > 0 and height > 0 and animation, "One or more item properties are invalid")
+function newGameObject(x, y, width, height, animation)
+    local gameObject = {}
+    setmetatable(gameObject, {__index = GameObject })
 
-    local item = {}
-    setmetatable(item, {__index = Item})
+    gameObject.animation = animation
+    gameObject.boundingBox = newBoundingBox(x, y, width, height)
 
-    item.animation = animation
-    item.onCollect = onCollect
-    item.boundingBox = newBoundingBox(x, y, width, height)
-
-    return item
+    return gameObject
 end
 
-function Item:draw()
+function GameObject:draw()
     self.animation:draw(self.boundingBox.position.x, self.boundingBox.position.y,
                         self.boundingBox.width, self.boundingBox.height)
     self.boundingBox:draw()
+end
+
+function GameObject:play()
+    if self.animation.play then self.animation:play() end
+end
+
+function GameObject:pause()
+    if self.animation.play then self.animation:pause() end
+end
+
+function GameObject:unpause()
+    if self.animation.play then self.animation:unpause() end
+end
+
+--[[
+--------------------------------------------------------
+Item
+--------------------------------------------------------]]
+local Item = GameObject
+
+function newItem(x, y, width, height, animation)
+    local item = newGameObject(x, y, width, height, animation)
+    setmetatable(item, {__index = Item})
+    return item
 end

@@ -24,7 +24,7 @@ local GridFile = "world.data"
 
 function SaveGrid()
     assert(level.grid ~= nil, "No world to save")
-    
+
     local file = io.open(GridFile, "w+")
     file:write(2, "\n")                                        -- write version
     file:write(level.grid.rows, " ", level.grid.columns, "\n") -- write world size
@@ -33,8 +33,8 @@ function SaveGrid()
     file:write(boolToNumber(config.ShowGrid), "\n")            -- write grid visibility  
 
     -- write tiles
-    for tile, x, y in level.grid.tiles:iterator() do
-        local tileIndex = Resources.tileMap:getIndex(tile.sprite)
+    for tile, x, y in level.tiles:iterator() do
+        local tileIndex = Resources.tileMap:getIndex(tile.animation)
         file:write(x, " ", y, " ", tileIndex, "\n")
     end
 
