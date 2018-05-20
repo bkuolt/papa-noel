@@ -47,6 +47,10 @@ function Animation:createFrames(spritesheet)
     return frames
 end
 
+function Animation:getFrames()
+    return self.frames
+end
+
 function Animation:play()
     self.running = true
     self.paused = false
@@ -91,7 +95,7 @@ function Animation:flip()
 end
 
 --[[
-@return index of the current frame, index of the following frame, tween factor
+@return index of the current frame, index of the following frame and the tween factor
 ]]
 function Animation:getCurrentFrames()
     if not self.paused then 
@@ -115,7 +119,7 @@ function Animation:draw(x, y, width, height)
 
     love.graphics.push("all")
         love.graphics.setShader(animationShader)
-        animationShader:send("secondFrame", nextFrame:getImage())
+        animationShader:send("secondFrame", nextFrame:getTexture())
         animationShader:send("tweenFactor", tweenFactor)
 
         currentFrame:draw(x, y, width, height)

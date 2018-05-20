@@ -4,50 +4,41 @@ Sprite
 --------------------------------------------------------]]
 local Sprite = {}
 
-function newSprite(image, quad)
-    assert(image, "invalid image or canvas")
-
-    local imageWidth, imageHeight = image:getDimensions()
-    assert(imageWidth and imageHeight, "invalid image dimensions")
-
+function newSprite(spriteSheet, quad)
     local sprite = {}
     setmetatable(sprite, {__index = Sprite })
-    sprite.image = image
+
+    local viewport = {}
+    viewport.x, viewport.x, viewport.width, viewport.height = quad:getViewport()
+
+    sprite.viewport = viewport
+    sprite.spriteSheet = spriteSheet
     sprite.quad = quad
 
     return sprite
 end
 
-function Sprite:getImage()
-    return self.image
+function Sprite:getTexture()
+    return self.spriteSheet.canvas
+end
+
+function Sprite:getPixel(x, y)
+    assert(x >= 0 and x < self.viewport.width and y >= 0 and y < self.viewport.height, "coordinates are out of bounce")
+    return self.spriteSheet.imageData:getPixel(self.quad, self.viewport.x + x, self.viewport.y + y)
 end
 
 function Sprite:getDimensions()
-    if self.quad == nil then 
-        return self.image:getDimensions()
-    end
-
-    local x, y, width, height = self.quad:getViewport()
-    return width, height
-end
-
-function Sprite:getScaleFactor(width, height)
-    local imageWidth, imageHeight = self:getDimensions()
-    return { x = width / imageWidth, 
-             y = height / imageHeight }
+    return self.viewport.width, self.viewport.height
 end
 
 function Sprite:draw(x, y, width, height)
     assert(x and y, "invalid draw position")
     assert(width and height and width > 0 and height > 0, "invalid draw size")
 
-    local scale = self:getScaleFactor(width, height)
+    local scale = { x = width / self.viewport.width,
+                    y = height / self.viewport.height }
 
-    if self.quad then
-        love.graphics.draw(self.image, self.quad, x, y, 0, scale.x, scale.y)
-    else
-        love.graphics.draw(self.image, x, y, 0, scale.x, scale.y)
-    end
+    love.graphics.draw(self.spriteSheet.canvas, self.quad, x, y, 0, scale.x, scale.y)
 end
 
 --[[
@@ -69,6 +60,7 @@ function newSpriteSheet(images)
     spriteSheet:drawToCanvas(images)
 
     spriteSheet.sprites = spriteSheet:createSprites(#images)
+    spriteSheet.imageData = spriteSheet.canvas:newImageData()
 
     return spriteSheet
 end
@@ -95,7 +87,7 @@ function SpriteSheet:drawToCanvas(images)
 
         local imageWidth, imageHeight = images[i]:getDimensions()
         love.graphics.draw(images[i], column * self.cellWidth, row * self.cellHeight, 0,
-                           self.cellWidth / imageWidth, self.cellHeight / imageHeight --[[ assures that all images have the same dimensions--]])
+                           self.cellWidth / imageWidth, self.cellHeight / imageHeight --[[ assures that all images have the same dimensions --]])
     end
 
     love.graphics.setCanvas()
@@ -115,7 +107,7 @@ function SpriteSheet:createSprites(spriteCount)
     local sprites = {}
 
     for index = 1, spriteCount do
-        sprites[index] = newSprite(self.canvas, self:createQuad(index - 1))
+        sprites[index] = newSprite(self, self:createQuad(index - 1))
     end
     return sprites
 end

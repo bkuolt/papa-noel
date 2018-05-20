@@ -1,11 +1,8 @@
 require("ParticleSystem")
 require("Grid")
 require("HashMap2D")
-require("Resources")
-
-print("Res.Back:")
-print(Resources)
-print(Resources.backgroundImage)
+require("Character")
+require("Tile")
 
 local Level = {}
 
@@ -14,20 +11,15 @@ function createLevel(rows, columns)
         backgroundScroll = { x = 0, y = 0 },
         background = nil,
         grid = createGrid(rows, columns),
+        tiles = newHashMap2D(),
         items = newHashMap2D(),
+        character = nil,
         paused = false,
-        particleSystem = createParticleSystem(2000, Resources.particleImage, 10),
-
-        animations = {},
-        tiles = newHashMap2D()
+        particleSystem = createParticleSystem(2000, Resources.particleImage, 10)
     }
     setmetatable(level, {__index = Level})
 
-
-    level.character = Resources.animations[3]                          -- Refactor
-    table.insert(level.animations, level.character)                    -- Refactor
     level.tileWidth, level.tileHeight = level.grid:getTileDimensions() -- Refactor
-
     return level
 end
 
@@ -39,13 +31,11 @@ function Level:setItem(column, row, animation)
     local item = newItem(self.tileWidth * column, self.tileHeight * row,
                          self.tileWidth, self.tileHeight,
                          animation)
-
-    table.insert(self.animations, animation)
     self.items:add(column, row, item)
 end
 
 function Level:setTile(column, row, sprite)
-    local tile = newItem(self.tileWidth * column, self.tileHeight * row,
+    local tile = newTile(self.tileWidth * column, self.tileHeight * row,
                          self.tileWidth, self.tileHeight,
                          sprite)
     self.tiles:add(column, row, tile)
@@ -63,6 +53,9 @@ function Level:setBackground(image)
     self.background = image
 end
 
+function Level:setCharacter(character)
+    self.character = character
+end
 
 --[[
 ----------------------------------------------------
@@ -83,23 +76,19 @@ end
 State management
 ----------------------------------------------------]]
 function Level:start()
-    for _, animation in pairs(self.animations) do
-        animation:play()
-    end
+    -- nothing to do yet
 end
 
 function Level:pause()
     self.paused = true
-    for _, animation in pairs(self.animations) do
-        animation:pause()
-    end
+    for item in self.items:iterator() do item:pause() end
+    self.character:pause()
 end
 
 function Level:unpause()
     self.paused = false
-    for _, animation in pairs(self.animations) do
-        animation:unpause()
-    end
+    for item in self.items:iterator() do item:unpause() end
+    self.character:unpause()
 end
 
 function Level:isPaused()
@@ -147,10 +136,6 @@ function Level:drawItems()
     end
 end
 
-function Level:drawCharacter() -- TODO: refactor function
-    self.character:draw(-1500, 315, 450, 400)
-end
-
 function Level:draw()
     self:drawBackground()
     self:drawSnow()
@@ -160,7 +145,7 @@ function Level:draw()
 
         self:drawTiles()
         self:drawItems()
-        self:drawCharacter()
+        self.character:draw()
 
     love.graphics.pop()
 end

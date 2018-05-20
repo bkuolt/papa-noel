@@ -47,7 +47,7 @@ Keyboard Callbacks
 ----------------------------------------------------]]
 function love.keypressed(key, scancode, isrepeat)
     if key == "escape" then
-        SaveGrid()
+        SaveLevel(level)
         love.event.quit() -- terminate
     elseif key == "p" and config.mode == "Game" then
         if level:isPaused() then 
@@ -55,6 +55,8 @@ function love.keypressed(key, scancode, isrepeat)
         else
             level:pause()
         end
+    elseif key == "b" then
+        config.ShowBoundingBoxes = not config.ShowBoundingBoxes
     elseif key == "space" then
         toggleMode()
     end

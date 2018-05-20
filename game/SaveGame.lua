@@ -4,6 +4,7 @@ require("Animation")
 require("Sprite")
 require("Level")
 require("Resources")
+require("Character")
 
 
 local function boolToNumber(value)
@@ -22,32 +23,31 @@ Saving and Restoring the world
 ----------------------------------------------------]]
 local GridFile = "world.data"
 
-function SaveGrid()
-    assert(level.grid ~= nil, "No world to save")
+function SaveLevel(level)
+    assert(level ~= nil, "No level to save")
 
     local file = io.open(GridFile, "w+")
-    file:write(2, "\n")                                        -- write version
-    file:write(level.grid.rows, " ", level.grid.columns, "\n") -- write world size
-    file:write(level.grid.scrollOffset.x, "\n")                -- write scroll offset
-    file:write(level.grid.scrollOffset.y, "\n") 
-    file:write(boolToNumber(config.ShowGrid), "\n")            -- write grid visibility  
+
+    file:write(string.format("%d\n", 3))                                       -- write version
+    file:write(string.format("%d %d \n", level.grid.rows, level.grid.columns)) -- write world size
+    file:write(string.format("%d %d \n", level.grid.scrollOffset.x, level.grid.scrollOffset.y)) -- write scroll offset
+    file:write(boolToNumber(config.ShowGrid), "\n") -- write grid visibility
 
     -- write tiles
     for tile, x, y in level.tiles:iterator() do
         local tileIndex = Resources.tileMap:getIndex(tile.animation)
-        file:write(x, " ", y, " ", tileIndex, "\n")
+        file:write(string.format("%d %d %d\n", x, y, tileIndex))
     end
+    -- TODO: write items
 
     file:close()
-    print("Saved world")
+    print("Saved level")
 end
-
-
 
 function LoadLevel()
     local file = io.open(GridFile, "r")
     assert(file, "no world exists to load");
-    
+
     local version = file:read("*number") -- read version
     local rows = file:read("*number")    -- read grid size
     local columns = file:read("*number")
@@ -73,7 +73,8 @@ function LoadLevel()
 
     -- read all saved tiles
     local tileCount = 0
-    while true do
+    for line in file:lines() do -- file:read("*l") und string.gmatch
+        print(line)
         -- read tile coordinates
         local x = file:read("*number")
         if x == nil then
@@ -117,6 +118,13 @@ function LoadLevel()
     -- HOW TO HARCODE
 
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
+
+    -- Set character
+    local character = newCharacter(-1500, 315,
+                                   450, 400,  -- width
+                                   Resources.animations[3])
+    level:setCharacter(character)
+
 
     return true
 end

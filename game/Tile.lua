@@ -1,15 +1,14 @@
+require("GameObject")
+
+--[[
+--------------------------------------------------------
+Item
+--------------------------------------------------------]]
 local Tile = {}
+setmetatable(Tile, {__index = GameObject})
 
-function newTile(sprite)
-    local tile = {}
+function newTile(x, y, width, height, animation)
+    local tile = newGameObject(x, y, width, height, animation)
     setmetatable(tile, {__index = Tile})
-
-    item.sprite = sprite
     return tile
 end
-
-function Tile:draw()
--- TODO
-end
-
--- TODO

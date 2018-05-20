@@ -62,27 +62,16 @@ local function LoadTileImages(path)
 end
 
 
-local function DO()
 
-local R ={}
-print("*****************************************************************")
+Resources  ={}
 
-R.animations = {}
-R.animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
-R.animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
-R.animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
-R.animations[3] = LoadCharacterAnimation()
+Resources.animations = {}
+Resources.animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
+Resources.animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
+Resources.animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
+Resources.animations[3] = LoadCharacterAnimation()
 
-R.particleImage = love.graphics.newImage("Art/snowflake.png") 
-R.backgroundImage = love.graphics.newImage("Art/background.png")
+Resources.particleImage = love.graphics.newImage("Art/snowflake.png") 
+Resources.backgroundImage = love.graphics.newImage("Art/background.png")
 
-R.tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))
-
-print(R.backgroundImage)
-
-print("*****************************************************************")
-
-return R
-end
-
-Resources = DO()
+Resources.tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))
