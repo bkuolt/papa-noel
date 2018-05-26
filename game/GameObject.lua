@@ -7,6 +7,7 @@ Animation
 --------------------------------------------------------]]
 GameObject = {}
 
+-- TODO position,width,height relativ to margin implementieren
 function newGameObject(x, y, width, height, animation)
     local gameObject = {}
     setmetatable(gameObject, {__index = GameObject })
@@ -18,26 +19,35 @@ function newGameObject(x, y, width, height, animation)
     gameObject.width = width
     gameObject.height = height
 
-    gameObject.margin = {x = 0, y = 0}
-
-
-    gameObject.boundingBox = newBoundingBox(x, y, width, height)
-
     gameObject.animation = animation
     if animation.play then
         animation:play()
     end
 
+     gameObject:calculateBoundingBox()
+
     return gameObject
 end
 
-function GameObject:getDimensions()
+function GameObject:getDimensions() -- not used yet 
     return self.boundingBox:getDimensions()
 end
 
 function GameObject:getPosition()
-    return self.position
+    return self.position -- TODO
 end
+
+-------------------------------------------------------------------------------
+function GameObject:addAnimation(name, animation)
+    assert(name and animation, "invalid animation name or object")
+    self.animations[name] = animation
+end
+
+function GameObject:setAnimation(name)
+    assert(self.animations[name] ~= nil, "unknown animation")
+    self.currentAnimation = self.animations[name]
+end
+-------------------------------------------------------------------------------
 
 function GameObject:translate(x, y)
     self.position.x = self.position.x + x
@@ -46,23 +56,30 @@ function GameObject:translate(x, y)
     self.boundingBox.position.y = self.boundingBox.position.y + y
 end
 
-
 function GameObject:calculateBoundingBox()
-    local boundingBox = BoundingBox.createFromAnimation(self.animation)
+    local boundingBox
+    local width, height
 
-    -- scale box to the desired size
-    local w,h = self.animation:getFrames()[1]:getDimensions()
-    boundingBox.width = boundingBox.width * (self.width / w)
-    boundingBox.height = boundingBox.height * (self.height) / h
-    boundingBox.position.x = boundingBox.position.x * (self.width / w)
-    boundingBox.position.y = boundingBox.position.y  * (self.height / h)
+    if self.animation.getFrames then
+         boundingBox = BoundingBox.createFromAnimation(self.animation)
+         width, height = self.animation:getFrames()[1]:getDimensions()
+    else
+        boundingBox = BoundingBox.createFromSprite(self.animation)
+        width, height = self.animation:getDimensions()
+    end
 
-    -- calculate margins
-    self.margin.x = boundingBox.position.x
-    self.margin.y = boundingBox.position.y
-    print(self.margin.x, self.margin.y)
+    -- scale bounding box to the specified size
+    local scale = {
+        x = self.width / width,
+        y = self.height / height
+    }
 
-    -- position bounding box globally
+    boundingBox.width = boundingBox.width * scale.x
+    boundingBox.height = boundingBox.height * scale.y
+    boundingBox.position.x = boundingBox.position.x * scale.x
+    boundingBox.position.y = boundingBox.position.y  * scale.y
+
+    -- position bounding box
     boundingBox.position.x = self.position.x + boundingBox.position.x
     boundingBox.position.y = self.position.y + boundingBox.position.y
 
@@ -74,8 +91,13 @@ function GameObject:setPosition(x, y)
     offset.x = x -self.position.x
     offset.y = y -self.position.y
 
-    offset.x = offset.x - self.margin.x
-    offset.y = offset.y - self.margin.y
+    -- calculate margins here
+    local margin = {}
+    margin.x = self.boundingBox.position.x - self.position.x
+    margin.y = self.boundingBox.position.y - self.position.y
+
+    offset.x = offset.x - margin.x
+    offset.y = offset.y - margin.y
 
     self:translate(offset.x, offset.y)
 end

@@ -121,10 +121,7 @@ function LoadLevel()
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
 
     -- Set character
-    local character = newCharacter(-1500, 315,
-                                   450, 400,  -- width
-                                   Resources.animations.character["Idle"])
-    level:setCharacter(character, -12,4)
+    level:setCharacter(-12,4)
 
     return true
 end

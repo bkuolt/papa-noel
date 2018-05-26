@@ -85,6 +85,7 @@ Resources.animations.character = {}
 Resources.animations.character["Idle"] = LoadCharacterAnimation("Idle", 15)
 Resources.animations.character["Jump"] = LoadCharacterAnimation("Jump", 15)
 Resources.animations.character["Walk"] = LoadCharacterAnimation("Walk", 15)
+Resources.animations.character["Dead"] = LoadCharacterAnimation("Dead", 15)
 
 -- Images
 Resources.images = {}

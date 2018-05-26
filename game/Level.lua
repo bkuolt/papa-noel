@@ -54,9 +54,13 @@ function Level:setBackground(image)
     self.background = image
 end
 
-function Level:setCharacter(character, column, row)
+function Level:setCharacter(column, row)
+  --  local width, height = level.grid:getTileDimensions()
+    
+    self.character = newCharacter(-1500, 315,
+                                    450, 400,  -- width
+                                    Resources.animations.character["Idle"])
 
-    self.character = character
     self.character:calculateBoundingBox()
 
     -- nicht robust!
@@ -66,8 +70,8 @@ function Level:setCharacter(character, column, row)
 
     self.character:setPosition(x,y)
 
-    local w, h = self.character:getDimensions()
-    self.character:translate(0, -h)
+    local _, height = self.character:getDimensions()
+    self.character:translate(0, -height)
 end
 
 --[[
