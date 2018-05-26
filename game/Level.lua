@@ -3,6 +3,7 @@ require("Grid")
 require("HashMap2D")
 require("Character")
 require("Tile")
+Resources = require("Resources")
 
 local Level = {}
 
@@ -15,7 +16,7 @@ function createLevel(rows, columns)
         items = newHashMap2D(),
         character = nil,
         paused = false,
-        particleSystem = createParticleSystem(2000, Resources.particleImage, 10)
+        particleSystem = createParticleSystem(2000, Resources.images.snowflake, 10)
     }
     setmetatable(level, {__index = Level})
 
@@ -58,21 +59,15 @@ function Level:setCharacter(character, column, row)
     self.character = character
     self.character:calculateBoundingBox()
 
-    
     -- nicht robust!
     local tile = self.tiles:get(column, row + 1)
-    
     local x = tile.boundingBox.position.x
-    local y = tile.boundingBox.position.y --- tile.boundingBox.height 
+    local y = tile.boundingBox.position.y
 
-    print(x, y)
-    
     self.character:setPosition(x,y)
 
     local w, h = self.character:getDimensions()
     self.character:translate(0, -h)
-    
-
 end
 
 --[[

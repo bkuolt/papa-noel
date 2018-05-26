@@ -69,7 +69,7 @@ function LoadLevel()
 
     level.tileImages = tileImages
 
-    level:setBackground(Resources.backgroundImage)
+    level:setBackground(Resources.images.background)
 
     -- read all saved tiles
     local tileCount = 0
@@ -94,27 +94,28 @@ function LoadLevel()
 
     file:close()
     -- TODO: Also save items
+    --print( string.match("Item 5 5", "Item %d %d"))
 
     -- Set items
-    level:setItem(-7,3, Resources.animations[1])
-    level:setItem(-6,3, Resources.animations[1])
-    level:setItem(-5,3, Resources.animations[1])
+    level:setItem(-7,3, Resources.animations.items[1])
+    level:setItem(-6,3, Resources.animations.items[1])
+    level:setItem(-5,3, Resources.animations.items[1])
 
-    level:setItem(-2,2, Resources.animations[2])
-    level:setItem(-1,2, Resources.animations[2])
-    level:setItem( 0,2, Resources.animations[2])
+    level:setItem(-2,2, Resources.animations.items[2])
+    level:setItem(-1,2, Resources.animations.items[2])
+    level:setItem( 0,2, Resources.animations.items[2])
 
-    level:setItem(2,3, Resources.animations[4])
-    level:setItem(3,3, Resources.animations[4])
-    level:setItem(4,3, Resources.animations[4])
+    level:setItem(2,3, Resources.animations.items[3])
+    level:setItem(3,3, Resources.animations.items[3])
+    level:setItem(4,3, Resources.animations.items[3])
 
-    level:setItem(-7,3, Resources.animations[1])
-    level:setItem(-6,3, Resources.animations[1])
-    level:setItem(-5,3, Resources.animations[1])
+    level:setItem(-7,3, Resources.animations.items[1])
+    level:setItem(-6,3, Resources.animations.items[1])
+    level:setItem(-5,3, Resources.animations.items[1])
 
-    level:setItem(2,3, Resources.animations[4])
-    level:setItem(3,3, Resources.animations[4])
-    level:setItem(4,3, Resources.animations[4])
+    level:setItem(2,3, Resources.animations.items[3])
+    level:setItem(3,3, Resources.animations.items[3])
+    level:setItem(4,3, Resources.animations.items[3])
     -- HOW TO HARCODE
 
     print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
@@ -122,9 +123,8 @@ function LoadLevel()
     -- Set character
     local character = newCharacter(-1500, 315,
                                    450, 400,  -- width
-                                   Resources.animations[3])
+                                   Resources.animations.character["Idle"])
     level:setCharacter(character, -12,4)
-
 
     return true
 end

@@ -81,14 +81,13 @@ function GameObject:setPosition(x, y)
 end
 
 function GameObject:draw()
-    self.animation:draw(self.position.x, self.position.y,
-                        self.width, self.height)
+    self.animation:draw(self.position.x, self.position.y, self.width, self.height)
 
     if Config.ShowBoundingBoxes then
+        -- draws image bounding box
         love.graphics.push("all")
             love.graphics.setColor(1,0,0)
             love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height)
-         --   love.graphics.setColor(1,1,0)
         love.graphics.pop()
 
         self.boundingBox:draw()

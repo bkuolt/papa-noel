@@ -1,49 +1,28 @@
---[[
-----------------------------------------------------
-Helper
-----------------------------------------------------]]
-local function CreateItemFilename(path, index)
-    local indexString
-    if index < 10 then
-         indexString = string.format("000%d", index)
-    else indexString = string.format("00%d", index)
-    end
-
-    return string.format("%s/%s.png", path, indexString)
-end
-
-local function CreateAnimationFilename(index)
-    return string.format("Art/animations/Idle (%s).png", index)
-end
+Animation = require("Animation")
 
 --[[
 ----------------------------------------------------
 Resource Loading
 ----------------------------------------------------]]
-local function LoadItemAnimation(path, fps)
+local function LoadAnimation(name, fps, filenameFunction)
     local images = {}
-    for index = 1, 60 do
-        images[index] = love.graphics.newImage(CreateItemFilename(path, index))
+    local index = 1
+
+    while true do
+        local filename = filenameFunction(name, index)
+        if not love.filesystem.exists(filename) then
+            break
+        end
+        images[index] = love.graphics.newImage(filename)
+        index = index + 1
     end
 
-    return LoadAnimation(images, fps)
-end
-
-local function LoadCharacterAnimation()
-    local images = {}
-    for i = 1, 16 do
-        images[i] = love.graphics.newImage(CreateAnimationFilename(i))
-    end
-
-    local animation = LoadAnimation(images, 15)
-    
-    animation:play()
-    return animation   
+    return Animation.LoadAnimation(images, fps)
 end
 
 local function LoadTileImages(path)
     assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
-    
+
     -- ensure trailing '/'
     if string.sub(path, -1) ~= "/" then
         path = path .. "/"
@@ -61,17 +40,58 @@ local function LoadTileImages(path)
     return images
 end
 
+--[[
+----------------------------------------------------
+Helper
+----------------------------------------------------]]
+local function CreateItemFilename(path, index)
+    local indexString
+    if index < 10 then
+         indexString = string.format("000%d", index)
+    else indexString = string.format("00%d", index)
+    end
 
+    return string.format("%s/%s.png", path, indexString)
+end
 
-Resources  ={}
+local function CreateAnimationFilename(name, index)
+    return string.format("Art/animations/%s (%s).png", name, index)
+end
+
+local function LoadCharacterAnimation(name, fps)
+    return LoadAnimation(name, fps, CreateAnimationFilename)
+end
+
+local function LoadItemAnimation(path, fps)
+    return LoadAnimation(path, fps, CreateItemFilename)
+end
+
+--[[
+----------------------------------------------------
+Resources
+----------------------------------------------------]]
+local Resources  ={}
 
 Resources.animations = {}
-Resources.animations[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
-Resources.animations[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3",25)
-Resources.animations[4] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
-Resources.animations[3] = LoadCharacterAnimation()
 
-Resources.particleImage = love.graphics.newImage("Art/snowflake.png") 
-Resources.backgroundImage = love.graphics.newImage("Art/background.png")
+-- Items
+Resources.animations.items = {}
+Resources.animations.items[1] = LoadItemAnimation("Art/Crystals/Original/Yellow/gem2", 15)
+Resources.animations.items[2] = LoadItemAnimation("Art/Crystals/Original/Blue/gem3", 25)
+Resources.animations.items[3] = LoadItemAnimation("Art/Crystals/Original/Pink/gem1", 15)
 
+-- Character Animations
+Resources.animations.character = {}
+Resources.animations.character["Idle"] = LoadCharacterAnimation("Idle", 15)
+Resources.animations.character["Jump"] = LoadCharacterAnimation("Jump", 15)
+Resources.animations.character["Walk"] = LoadCharacterAnimation("Walk", 15)
+
+-- Images
+Resources.images = {}
+Resources.images.snowflake = love.graphics.newImage("Art/snowflake.png")
+Resources.images.background = love.graphics.newImage("Art/background.png")
+
+-- Tile Maps
 Resources.tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))
+
+return Resources

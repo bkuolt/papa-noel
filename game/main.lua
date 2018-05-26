@@ -85,7 +85,6 @@ function love.load()
     love.graphics.setFont(font)
 
     if not LoadLevel() then 
-        
         --print("===================> Fehler beiim Laden")
         exit()
         level = createLevel(16, 8)

@@ -130,8 +130,10 @@ end
 --------------------------------------------------------
 Helper
 --------------------------------------------------------]]
-function LoadAnimation(images, fps)
+function Animation.LoadAnimation(images, fps)
     local spriteSheet = newSpriteSheet(images)
     local animation = newAnimation(spriteSheet, fps)
     return animation
 end
+
+return Animation
