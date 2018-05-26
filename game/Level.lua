@@ -53,8 +53,26 @@ function Level:setBackground(image)
     self.background = image
 end
 
-function Level:setCharacter(character)
+function Level:setCharacter(character, column, row)
+
     self.character = character
+    self.character:calculateBoundingBox()
+
+    
+    -- nicht robust!
+    local tile = self.tiles:get(column, row + 1)
+    
+    local x = tile.boundingBox.position.x
+    local y = tile.boundingBox.position.y --- tile.boundingBox.height 
+
+    print(x, y)
+    
+    self.character:setPosition(x,y)
+
+    local w, h = self.character:getDimensions()
+    self.character:translate(0, -h)
+    
+
 end
 
 --[[

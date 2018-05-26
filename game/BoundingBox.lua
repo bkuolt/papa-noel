@@ -34,78 +34,95 @@ end
 ----------------------------------------------------
 Helper
 ----------------------------------------------------]]
---[[
-local function isEmptyPixel(imageData, x, y)
-    local r,g,b,a = imageData:getPixel(x, y)
+
+local function isEmptyPixel(sprite, x, y)
+    local r,g,b,a = sprite:getPixel(x, y)
     return a == 0 -- alpha channel
 end
 
-local function isEmptyColumn(imageData, x)
-    for y = 0, imageData:getHeight() - 1 do
-        if not isEmptyPixel(imageData, x, y) then 
-            return false 
+local function isEmptyColumn(sprite, x)
+    local width, height = sprite:getDimensions()
+
+    for y = 0, height - 1 do
+        if not isEmptyPixel(sprite, x, y) then
+            return false
         end
     end
     return true
 end
 
-local function isEmptyRow(imageData, y)
-    for x = 0, imageData:getWidth() - 1 do
-        if not isEmptyPixel(imageData, x, y) then 
-            return false 
+local function isEmptyRow(sprite, y)
+    local width, height = sprite:getDimensions()
+
+    for x = 0, width - 1 do
+        if not isEmptyPixel(sprite, x, y) then
+            return false
         end
     end
     return true
 end
 
-local function calculateOffsets(imageData) 
-    local width, height = imageData:getDimensions()
+local function calculateOffsets(sprite)
+    local width, height = sprite:getDimensions()
 
     local min = {x = 0, y = 0}
     local max = {x = width - 1, y = height - 1}
 
-    while min.x < width and isEmptyColumn(imageData, min.x) do  
+    while min.x < width and isEmptyColumn(sprite, min.x) do  
         min.x = min.x + 1 
     end 
 
-    while max.x >= min.x and isEmptyColumn(imageData, max.x) do 
+    while max.x >= min.x and isEmptyColumn(sprite, max.x) do 
         max.x = max.x - 1
     end
 
-    while min.y < height and isEmptyRow(imageData, min.y) do 
+    while min.y < height and isEmptyRow(sprite, min.y) do 
         min.y = min.y + 1
     end
 
-    while max.y > min.x and isEmptyRow(imageData, max.y) do 
+    while max.y > min.x and isEmptyRow(sprite, max.y) do 
         max.y = max.y - 1
     end
+
 
     return min, max
 end
 
---]]
-
 
 function BoundingBox.createFromSprite(sprite)
-    --[[
-    for y = 0, sprite:getHeight() do 
-        for x = 0, sprite:getHeight() do 
-    
-     color in sprite:getPixelIterator() do
-        -- TODO
-    end
-    --]]
+
+    local min, max = calculateOffsets(sprite)
+
+    return newBoundingBox(min.x, min.y,
+                          max.x - min.x, max.y - min.y)
 end
 
 function BoundingBox.createFromAnimation(animation)
     local boundingBoxes = {}
 
+    local timestamp = love.timer.getTime()
+
     -- calculate bounding box for each frame
-    for frame in animation:getFrames() do
+    for _, frame in pairs(animation:getFrames()) do
         table.insert(boundingBoxes, BoundingBox.createFromSprite(frame))
     end
 
-    -- TODO: calculate the bounding box so that each bounding box is within
+
+    --calculate the bounding box so that each bounding box is within
+    local max = {x = 0, y = 0}
+    local min = {x = math.huge, y = math.huge}
+
+    for _, box in pairs(boundingBoxes) do
+        max.x = math.max(max.x, box.position.x + box.width)
+        max.y = math.max(max.y, box.position.y + box.height)
+
+        min.x = math.min(min.x, box.position.x)
+        min.y = math.min(min.y, box.position.y)
+    end
+
+    print(string.format("Bounding box calculation %f seconds", love.timer.getTime() - timestamp))
+    return newBoundingBox(min.x, min.y,
+                          max.x - min.x, max.y - min.y)
 end
 
 return BoundingBox

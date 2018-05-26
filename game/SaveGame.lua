@@ -123,7 +123,7 @@ function LoadLevel()
     local character = newCharacter(-1500, 315,
                                    450, 400,  -- width
                                    Resources.animations[3])
-    level:setCharacter(character)
+    level:setCharacter(character, -12,4)
 
 
     return true

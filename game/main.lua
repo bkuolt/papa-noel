@@ -66,10 +66,20 @@ end
 ----------------------------------------------------
 Initialization
 ----------------------------------------------------]]
+local function ShowLoadScreen()
+    local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", love.graphics.getHeight() / 5)
+
+    love.graphics.clear()
+    love.graphics.push("all")
+        love.graphics.setFont(font)
+        love.graphics.setColor(1.0, 1.0, 1.0)
+        love.graphics.print("Loading...")
+    love.graphics.pop();
+    love.graphics.present()
+end
+
 function love.load() 
-    love.window.setTitle("Papa Noel Level Editor")
-    love.graphics.setDefaultFilter("linear", "linear")
-    love.mouse.setVisible(false)
+    ShowLoadScreen()
 
     local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", 30)
     love.graphics.setFont(font)

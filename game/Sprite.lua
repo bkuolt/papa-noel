@@ -9,7 +9,7 @@ function newSprite(spriteSheet, quad)
     setmetatable(sprite, {__index = Sprite })
 
     local viewport = {}
-    viewport.x, viewport.x, viewport.width, viewport.height = quad:getViewport()
+    viewport.x, viewport.y, viewport.width, viewport.height = quad:getViewport()
 
     sprite.viewport = viewport
     sprite.spriteSheet = spriteSheet
@@ -24,7 +24,7 @@ end
 
 function Sprite:getPixel(x, y)
     assert(x >= 0 and x < self.viewport.width and y >= 0 and y < self.viewport.height, "coordinates are out of bounce")
-    return self.spriteSheet.imageData:getPixel(self.quad, self.viewport.x + x, self.viewport.y + y)
+    return self.spriteSheet.imageData:getPixel(self.viewport.x + x, self.viewport.y + y)
 end
 
 function Sprite:getDimensions()
