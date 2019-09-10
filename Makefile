@@ -1,6 +1,6 @@
 
 .DEFAULT_GOAL = install
-.PHONE = install run
+.PHONE = install run clean
 
 LOVE_PATH = $(PWD)"/src/"
 
@@ -10,3 +10,7 @@ install:
 
 run: install
 	@love $(LOVE_PATH)
+
+clean:
+	zip src/Art.zip src/Art
+	rm -f -r src/Art

@@ -1,14 +1,16 @@
 ## About
 *Papá Noel* - Spanish for Santa Claus- is s simple 2D plattformer.
 
-Currently this is just a tech demo and work in progress.
-YOu are very welcome to contribute!
 
+![Screenshot](doc/screenshot.png)
+
+Currently this is just a tech demo and work in progress.
+You are very welcome to contribute to this project!
 
 # Installation
 1) Check out the repository from Github:
 ``` bash
-git clone https://bastian.kuolt@gitlab.tubit.tu-berlin.de/bastian.kuolt/particle_system.git PapaNoel
+git clone https://github.com/bkuolt/PapaNoel.git PapaNoel
 ```
 2) Go to the `PapaNoel` directory and run the installer:
 ```bash

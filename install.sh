@@ -14,5 +14,5 @@ git clone https://github.com/rxi/json.lua src/json.lua
 
 # unzips the art directory
 sudo apt-get install unzip
-unzip src/Art.zip -d src/Art
+unzip src/Art.zip -d src
 rm src/Art.zip
