@@ -21,11 +21,10 @@ end
 ----------------------------------------------------
 Saving and Restoring the world
 ----------------------------------------------------]]
-local GridFile = "world.data"
+local GridFile = love.filesystem.getSourceBaseDirectory() .. "/world.data"
 
 function SaveLevel(level)
     assert(level ~= nil, "No level to save")
-
     local file = io.open(GridFile, "w+")
 
     file:write(string.format("%d\n", 3))                                       -- write version
@@ -45,8 +44,10 @@ function SaveLevel(level)
 end
 
 function LoadLevel()
+    print(GridFile)
     local file = io.open(GridFile, "r")
     assert(file, "no world exists to load");
+
 
     local version = file:read("*number") -- read version
     local rows = file:read("*number")    -- read grid size

@@ -1,8 +1,0 @@
-TODO:
--- pack all resoources in a table
--- rename animations[3] to to character Anaimation
--- refactor Level.lua, SaveGame.lua 
--- implement Item-Selector for LevelEditor.lua
-
--- add higher level classes Tile.lua and Character.lua
--- add culling and collision detection
