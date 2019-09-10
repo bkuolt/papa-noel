@@ -5,7 +5,7 @@ require("Sprite")
 require("Level")
 require("Resources")
 require("Character")
-
+require("savegame")
 
 local function boolToNumber(value)
     if value == true then return 1 end
@@ -24,23 +24,8 @@ Saving and Restoring the world
 local GridFile = love.filesystem.getSourceBaseDirectory() .. "/world.data"
 
 function SaveLevel(level)
-    assert(level ~= nil, "No level to save")
-    local file = io.open(GridFile, "w+")
-
-    file:write(string.format("%d\n", 3))                                       -- write version
-    file:write(string.format("%d %d \n", level.grid.rows, level.grid.columns)) -- write world size
-    file:write(string.format("%d %d \n", level.grid.scrollOffset.x, level.grid.scrollOffset.y)) -- write scroll offset
-    file:write(boolToNumber(config.ShowGrid), "\n") -- write grid visibility
-
-    -- write tiles
-    for tile, x, y in level.tiles:iterator() do
-        local tileIndex = Resources.tileMap:getIndex(tile.animation)
-        file:write(string.format("%d %d %d\n", x, y, tileIndex))
-    end
-    -- TODO: write items
-
-    file:close()
-    print("Saved level")
+    saveLevel("savegame.json", level);
+    print("Saved savegame to savegame.json");
 end
 
 function LoadLevel()

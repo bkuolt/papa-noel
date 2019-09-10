@@ -1,0 +1,17 @@
+{
+    "version" : "0.0.1",
+    "grid" : { "x" : 8, "y" : 6 },
+    "scrollOffset" : { "x" : 0, "y" : 0},
+    "tiles" : [
+        {
+            "position" : { "x" : 0, "y" : 0 } ,
+            "sprite" : "sprite.png"
+        }
+    ],
+    "items" : [
+        {
+            "position" : { "x" : 0, "y" : 0 } ,
+            "sprite" : "coin.png"
+        }
+    ]
+}
