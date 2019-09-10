@@ -5,7 +5,7 @@
 LOVE_PATH = $(PWD)"/src/"
 
 install:
-	@./install.sh
+	@ $(shell ./install.sh)
 	@echo "you can run the game with 'make run'"
 
 run: install
