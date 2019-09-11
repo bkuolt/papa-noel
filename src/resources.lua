@@ -50,6 +50,27 @@ local function loadSpriteSheet(path)
     return newSpriteSheet(images);
 end
 
+function loadConfig(path)
+    local json = io_util.load_json(path);
+    return {  -- converts to a Papa Noel compatible configuration table
+        mode = json.mode,
+        ShowGrid = json.showGrid,
+        ScrollSpeed = json.scrollSpeed,
+        ShowBoundingBoxes = json.showBoundingBoxes
+    }
+end
+
+function saveConfig(path, config)
+    local object = { -- converts from a Papa Noel config to a JSON file
+        mode = config.mode,
+        showGrid = cofig.ShowGrid,
+        showBoundingBoxes = config.ShowBoundingBoxes,
+        scrollSpeed = config.ScrollSpeed,
+    }
+
+    return io_utils.save_json(path, object);
+end
+
 --[[
 ----------------------------------------------------
 Globally accesible graphics resources

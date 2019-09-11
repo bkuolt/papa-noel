@@ -16,6 +16,12 @@ This sections contains a brief list of planned enhancements of this project. As 
     * Coding in a *Lua style*
 * Move as much code as possible to to C++. **The general goal is to replace *LÖVE* with a custom C++ 2D game engine with *Lua* bindings.**
 
+# Directory Structure
+* root 
+    * src
+    * assets
+    * doc
+
 # Level Files
 This section provides a brief overview of the *json* data types that are planned to be used for future savegames.
 ## Types

@@ -8,13 +8,43 @@ local function load_file(path)
     return string;
 end
 
+local function save_file(path, content)
+    local file = assert(io.open(path, "rb"), "could not load file");
+    assert (file:write(content), "could not write content to file" );
+    file:close();
+end
+
+-- ------------------------ Interface ------------------------
+
 function load_json(filename)
     local string = load_file(filename);
     return assert(json.decode(string), "could not decode JSON object");
 end
 
-local function directory_items(path)
-    assert(love.filesystem.getInfo(path).type == "directory", "path must point to a directory")
-    if (string.sub(path, -1) ~= "/") then path = path .. "/"end;  -- ensure path woth trailing '/'
-    return love.filesystem.getDirectoryItems(path)
+function save_json(path, object)
+    local string = assert(json.encode(object));
+    save_file(path, string);
+end
+
+local string = json.encode(object);
+
+function directory_items(path)
+    if (string.sub(path, -1) ~= "/") then
+        path = path .. "/";  -- ensure path woth trailing '/'
+    end;
+
+    local paths = {};
+	for _, _filename in ipairs(love.filesystem.enumerate(path)) do  -- Note: love.filesystem.getDirectoryItems() is deprecated
+		local _path = path.."/".. _filename
+        if love.filesystem.isFile(_path) then
+            table.insert(paths, _path);
+		end
+	end
+
+    return paths;
+end
+
+-- -------------------------- Test ---------------------------
+function Test()
+-- TODO
 end
