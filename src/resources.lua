@@ -2,6 +2,9 @@ local json = require("json");
 local Animation = require("Animation")  -- TODO: rename
 local love = require ("love");
 
+local path_asset = "../asset/";
+
+-- ------------------------------------------------
 
 local function loadJSON(filename)
     local file = assert(io.open(filename, "rb"), "could not load file");
@@ -10,72 +13,77 @@ local function loadJSON(filename)
     return json.decode(string);
 end
 
-function loadAnimation(filename)
-    -- TODO: use asset directory as reference
-    local jsonObject = assert(loadJSON(filename), "could not get JSON object");
+-- ------------------------------------------------
+
+local function loadAnimation(filename)
+    local jsonObject = loadJSON(path_asset .. filename);
+    assert(jsonObject, "could not get JSON object");
 
     local images = {}
-    for _, name in jsonObject.frames do
-        table.insert(images, love.graphics.newImage(filename));
+    for _, frame in jsonObject.frames do
+        table.insert(images, love.graphics.newImage(path_asset .. frame));
     end
 
     return Animation.LoadAnimation(images, jsonObject.fps)
 end
 
-
 local function loadTiles(path)
-    assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
+    path = path_asset .. path;
 
-    -- ensure trailing '/'
-    if string.sub(path, -1) ~= "/" then
-        path = path .. "/"
-    end
-
-    -- load all images from the specified path 
-    local files = love.filesystem.getDirectoryItems(path)
+    -- load all images from the specified path
+    assert(love.filesystem.getInfo(path).type == "directory", "path must point to a directory")
+    if (string.sub(path, -1) ~= "/") then path = path .. "/";  -- ensure path woth trailing '/'
+    local fileList = love.filesystem.getDirectoryItems(path)
 
     local images = {}
-    for index, file in ipairs(files) do
-        images[#images + 1] = love.graphics.newImage(path .. file)
+    for index, file in ipairs(fileList) do
+        table.insert(images, love.graphics.newImage(path .. file));
     end
 
-    print("Loaded " ..#images.. " tiles")
+    print("Loaded " .. #images .. " tiles")
     return images
-
-
 end
 
+local function loadImages(filename)
+    local path = path_asset .. filename;
+    local jsonObject = assert(loadJSON(path), "could not get JSON object");
 
+    for name, filename in ipairs(jsonObject) do
+        local path = path_asset .. filename;
+        jsonObject[name] = love.graphics.newImage(path);
+    end
+    return jsonObject;
+end
 
 --[[
 ----------------------------------------------------
 Resources
 ----------------------------------------------------]]
-local resources  ={}
+local function loadResources()
+    local resources  = {}
 
-resources.animations = {}
+    resources.animations = {}  -- TODO: check out whey this member is needed
 
--- Items
-resources.animations.items = {
-    loadAnimation("Crystals/Original/Yellow/gem2.json"),
-    loadAnimation("Crystals/Original/Blue/gem3.json"),
-    loadAnimation("Crystals/Original/Pink/gem1.json")
-};
+    print("Loading level items...");
+    resources.animations.items = {
+        loadAnimation("Crystals/Original/Yellow/gem2.json"),
+        loadAnimation("Crystals/Original/Blue/gem3.json"),
+        loadAnimation("Crystals/Original/Pink/gem1.json")
+    };
 
--- Character Animations
-resources.animations.character = {
-    Idle = loadAnimation("animations/idle.json"),
-    Jump = loadAnimation("animations/jump.json"),
-    Walk = loadAnimation("animations/walk.json"),
-    Dead = loadAnimation("animations/dead.json")
-};
+    printf("Loading character animations...");
+    resources.animations.character = {
+        Idle = loadAnimation("animations/idle.json"),
+        Jump = loadAnimation("animations/jump.json"),
+        Walk = loadAnimation("animations/walk.json"),
+        Dead = loadAnimation("animations/dead.json")
+    };
 
--- Images
-resources.images = {
-    snowflake = love.graphics.newImage("Art/snowflake.png"),
-    background = love.graphics.newImage("Art/background.png")
-}
--- Tile Maps
-resources.tileMap = newSpriteSheet(LoadTileImages("Art/Tiles/"))
+    print("Loading images...");
+    resources.images = loadImages("images.json");
+    
+    print("Creating sprite sheet...")
+    resources.tileMap = newSpriteSheet(loadTiles("tiles"));
+end
 
-return resources
+return loadResources();  -- returns a table containing all the resources needed by Papa Noel
