@@ -1,12 +1,11 @@
 local json = require "json"
+local io_util = require("io_util");
 local config = require("conf")  -- the global Papa Noel configuration
 require("Resources")
 
+
 function loadLevel(filename)
-    local file = assert(io.open(filename, "rb"), "could not load file");
-    local content = file:read("*all")
-    file:close()
-    return json.decode(content)
+    return io_util.load_json(filename);
 end
 
 local function decodeJSONToLevel(onject)
