@@ -3,7 +3,7 @@ require("Item")
 require("Animation")
 require("Sprite")
 require("Level")
-require("Resources")
+local Resources = require("resources")
 require("Character")
 require("savegame")
 

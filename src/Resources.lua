@@ -1,1 +1,0 @@
-return require("resources");  -- This is just a stub for the actively ongoing refactoring

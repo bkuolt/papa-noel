@@ -1,7 +1,7 @@
 local json = require "json"
 local io_util = require("io_util");
 local config = require("conf")  -- the global Papa Noel configuration
-require("Resources")
+local resources = require("resources")
 
 
 function loadLevel(filename)

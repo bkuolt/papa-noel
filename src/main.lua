@@ -2,7 +2,7 @@ config = require("conf")
 require("Sprite")
 require("Animation")
 require("SaveGame")
-require("Resources")
+local Resources = require("resources")
 require("Level")
 LevelEditor = require("LevelEditor")
 

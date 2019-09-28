@@ -1,5 +1,5 @@
 local love = require ("love");
-local io_util = require("io_util");
+require("io_util");
 local Animation = require("Animation")  -- TODO: rename
 
 
@@ -8,7 +8,7 @@ local function get_path(filename)
 end
 
 local function loadAnimation(filename)
-    local json_object = io_util.load_json(get_path(filename));
+    local json_object = load_json(get_path(filename));
     assert(json_object.fps and json_object.frames, "invalid JSON format");
 
     local frames = {}  -- of type love.graphics.Image
@@ -21,7 +21,7 @@ local function loadAnimation(filename)
 end
 
 local function loadImages(filename)
-    local json_object = io_util.load_json(get_path(filename));
+    local json_object = load_json(get_path(filename));
 
     for _name, _filename in ipairs(json_object) do
         local image = love.graphics.newImage(get_path(_filename));
@@ -36,7 +36,7 @@ end
 Load all images in a directory and returns them as a sprite sheet.
 ----------------------------------------------------------------------]]
 local function loadSpriteSheet(path)
-    local directory_items = io_util.directory_items(get_path(path));
+    local directory_items = directory_items(get_path(path));
 
     local images = {}
     for _, filename in ipairs(directory_items) do
@@ -51,7 +51,7 @@ local function loadSpriteSheet(path)
 end
 
 function loadConfig(path)
-    local json = io_util.load_json(path);
+    local json = load_json(path);
     return {  -- converts to a Papa Noel compatible configuration table
         mode = json.mode,
         ShowGrid = json.showGrid,

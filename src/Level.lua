@@ -3,7 +3,7 @@ require("Grid")
 require("HashMap2D")
 require("Character")
 require("Tile")
-Resources = require("Resources")
+Resources = require("resources")
 
 local Level = {}
 
