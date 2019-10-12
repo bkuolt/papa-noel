@@ -35,6 +35,10 @@ function Level:setItem(column, row, animation)
     self.items:add(column, row, item)
 end
 
+function Level:getItems()
+    -- TODO: get Items
+end
+
 function Level:setTile(column, row, sprite)
     local tile = newTile(self.tileWidth * column, self.tileHeight * row,
                          self.tileWidth, self.tileHeight,
@@ -56,7 +60,7 @@ end
 
 function Level:setCharacter(column, row)
   --  local width, height = level.grid:getTileDimensions()
-    
+
     self.character = newCharacter(-1500, 315,
                                     450, 400,  -- width
                                     Resources.animations.character["Idle"])

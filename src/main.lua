@@ -1,4 +1,5 @@
-config = require("conf")
+local config = require("config")
+
 require("Sprite")
 require("Animation")
 require("SaveGame")
@@ -6,10 +7,10 @@ local Resources = require("resources")
 require("Level")
 LevelEditor = require("LevelEditor")
 
-function toggleMode()
+local function toggleMode()
     if config.mode ~= "Editor" then
-         config.mode = "Editor"
-    else 
+        config.mode = "Editor"
+    else
         config.mode = "Game"
     end
 
@@ -124,10 +125,10 @@ local function PrintStatistics()
                                "%d textures (%d MB) \n" ..
                                "%d canvases",
                                love.timer.getFPS(),
-                               statistics.drawcalls, statistics.drawcallsbatched, 
+                               statistics.drawcalls, statistics.drawcallsbatched,
                                statistics.images,statistics.texturememory / 1024^2,
                                statistics.canvases)
-    
+
     love.graphics.push("all")
         love.graphics.setColor(255, 255, 255,255)
         love.graphics.print(text, 10,0)
@@ -136,7 +137,7 @@ end
 
 local function p()
     if not level:isPaused() then
-        return 
+        return
     end
 
     love.graphics.push("all")
@@ -151,7 +152,7 @@ end
 
 function love.draw()
     love.graphics.clear(0, 0, 0)
-    
+
     level:draw()
     PrintStatistics()
     p()
