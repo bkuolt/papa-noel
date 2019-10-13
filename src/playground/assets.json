@@ -1,0 +1,8 @@
+{
+    "tiles" : [], 
+    "animations" : [
+        "animations/walk.json",
+        "animations/idle.json"
+    ],
+    "background" : "image.png"
+}
