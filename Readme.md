@@ -1,11 +1,10 @@
 ## About
-*Papá Noel* - Spanish for Santa Claus- is s simple 2D plattformer.
-
+*Papá Noel* - Spanish for Santa Claus - is s simple 2D platform game.
 
 ![Screenshot](doc/screenshot.png)
 
-Currently this is just a tech demo and work in progress.
-You are very welcome to contribute to this project!
+Currently this is just a tech demo and is still work in progress.
+You are very welcome to contribute to this project.
 
 # Installation
 1) Check out the repository from Github:

@@ -1,8 +1,7 @@
-local config = require("config")
-
 require("Sprite")
 require("Animation")
 require("SaveGame")
+
 local Resources = require("resources")
 require("Level")
 LevelEditor = require("LevelEditor")
@@ -79,7 +78,7 @@ local function ShowLoadScreen()
     love.graphics.present()
 end
 
-function love.load() 
+function love.load()
     ShowLoadScreen()
 
     local font = love.graphics.newFont("Art/font/SF Atarian System Bold.ttf", 30)
