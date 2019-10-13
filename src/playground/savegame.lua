@@ -11,5 +11,5 @@ function loadGame()
 end
 
 function saveGame()
-    -- TODO: Save the current game
+    -- TODO: Save the current game and level sate
 end

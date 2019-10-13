@@ -6,4 +6,5 @@ function loadConfig()
     -- TODO: set icon
     -- TODO: set resolution
     love.window.setFullscreen(true);
+    print("loaded config")
 end

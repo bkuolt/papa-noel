@@ -2,6 +2,7 @@
 require("config")
 require("savegame")
 require("graphics")
+require("input")
 
 local level = {}
 
@@ -21,10 +22,17 @@ end
 
 function love.quit()
     saveGame(level)
+    print("terminating Papa Noel")
 end
 
 local function onPause()
-    -- TODO: handle pause events
+    -- TODO: Ignore when loading screen is active
+    -- TODO: If game is paused
+        -- TODO: resume the level (and all it's components)
+        -- TODO: hide pause menu
+    -- TODO: If the game not pause
+        -- TODO: pause the level (and all it's components)
+        -- TODO: pause pause menu
 end
 
 function love.keypressed(key, scancode, isrepeat)
@@ -32,5 +40,11 @@ function love.keypressed(key, scancode, isrepeat)
         love.event.quit()
     else if key == "P" then
         onPause()
+    else
+        notifyKeyPress(key)
     end
+end
+
+function love.keyreleased(key, scancode, isrepeat)
+    notifyKeyRelease(key)
 end
