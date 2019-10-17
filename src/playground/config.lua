@@ -1,7 +1,11 @@
 -- Copyright 2019 Bastian Kuolt
+local json = require("json")
 
 function loadConfig()
-    love.window.minimize();
+    return;  -- TODO
+end 
+
+if false then
     local config = json.parse("config.json")
     -- TODO: set icon
     -- TODO: set resolution

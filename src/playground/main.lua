@@ -3,20 +3,41 @@ require("config")
 require("savegame")
 require("graphics")
 require("input")
+require("font")
 
 local level = {}
 
+local state = {
+    mode = ""
+}
+
+local font = newFont("assets/font/SF Atarian System Bold Italic.ttf", 100)
+local loadingTime = 0;
+
 local function showLoadingScreen()
-    local font = gfx.Font.create("assets/font/SF Atarian System Bold.ttf", 100)
-    love.graphics.clear(Colors.black);
-    font.print("Loading...", white, vec2(0, 0));
+    loadingTime = loadingTime + love.timer.getDelta();
+
+    local num = math.ceil(loadingTime % 3)
+    local text = "Loading "
+    for i = 1, num do text = text .. "." end
+
+    love.graphics.clear(0,0,1)
+    font:print(text)
 end
 
-function love.onLoad()
+--[[ -------------------------------------------------------------- --]]
+
+function love.load()
+    state.mode = "loading"
+
+    -- love.window.minimize();
+    love.window.setTitle("Papa Noel [Work in Progress]")
     loadConfig()
+    -- love.window.restore();
+
     showLoadingScreen()
-    loadAssets()
-    level = loadGame()
+    -- TODO: loadAssets()
+    -- TODO: level = loadGame()
     -- TODO: Start playing level
 end
 
@@ -24,6 +45,17 @@ function love.quit()
     saveGame(level)
     print("terminating Papa Noel")
 end
+
+--[[ -------------------------------------------------------------- --]]
+
+function love.draw()
+    if state.mode == "loading" then
+        showLoadingScreen()
+    end
+    -- TODO
+end
+
+
 
 local function onPause()
     -- TODO: Ignore when loading screen is active
@@ -38,7 +70,7 @@ end
 function love.keypressed(key, scancode, isrepeat)
     if key == "ESC" then
         love.event.quit()
-    else if key == "P" then
+    elseif key == "P" then
         onPause()
     else
         notifyKeyPress(key)

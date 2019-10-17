@@ -1,5 +1,9 @@
 -- Copyright 2019 Bastian Kuolt
 
+function Level:start()
+    -- TODO: calculate bounding boxes
+end
+
 function Level.pause()
     -- TODO
 end
@@ -17,7 +21,7 @@ function Level.addItem(animation, position)
 end
 
 function Level.setCharacter(character, position)
-    -- TODO
+    -- TODO: check for collisions
 end
 
 function Level.setBackground(image)
