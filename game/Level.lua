@@ -5,6 +5,7 @@ require("Character")
 require("Tile")
 Resources = require("Resources")
 
+
 local Level = {}
 
 function createLevel(rows, columns)
@@ -55,15 +56,14 @@ function Level:setBackground(image)
 end
 
 function Level:setCharacter(column, row)
-  --  local width, height = level.grid:getTileDimensions()
-    
+    --  local width, height = level.grid:getTileDimensions()
     self.character = newCharacter(-1500, 315,
-                                    450, 400,  -- width
-                                    Resources.animations.character["Idle"])
+                                  450, 400,  -- width, height
+                                  Resources.animations.character["Idle"])
 
     self.character:calculateBoundingBox()
 
-    -- nicht robust!
+    -- TODO: this is not robust!
     local tile = self.tiles:get(column, row + 1)
     local x = tile.boundingBox.position.x
     local y = tile.boundingBox.position.y
@@ -75,9 +75,9 @@ function Level:setCharacter(column, row)
 end
 
 --[[
-----------------------------------------------------
+------------------------------------------------
 Scrolling
-----------------------------------------------------]]
+------------------------------------------------]]
 function Level:scroll(x, y)
     if self.grid:scroll(self.tiles, x, y) then
         self:scrollBackground(x / 2)
@@ -89,9 +89,9 @@ function Level:scrollBackground(x)
 end
 
 --[[
-----------------------------------------------------
+------------------------------------------------
 State management
-----------------------------------------------------]]
+------------------------------------------------]]
 function Level:start()
     -- nothing to do yet
 end
@@ -113,9 +113,9 @@ function Level:isPaused()
 end
 
 --[[
-----------------------------------------------------
+------------------------------------------------
 Rendering
-----------------------------------------------------]]
+------------------------------------------------]]
 function Level:update(delta)
     self.particleSystem:update(delta)
 end
@@ -126,7 +126,6 @@ function Level:drawBackground()
 
     love.graphics.push()
         local translation = self.backgroundScroll.x % screenWidth
-
         love.graphics.draw(self.background,  translation, 0, 0,  screenWidth / imageWidth, screenHeight / imageHeight)
         love.graphics.draw(self.background,  translation + screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
         love.graphics.draw(self.background,  translation - screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)

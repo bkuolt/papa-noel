@@ -8,7 +8,7 @@ local TileSelector = {
 
 function TileSelector.setCurrentTile(sprite)
     assert(sprite, "invalid sprite")
-    TileSelector.currentSpriteIndex = Resources.tileMap:getIndex(sprite) 
+    TileSelector.currentSpriteIndex = Resources.tileMap:getIndex(sprite)
 end
 
 function TileSelector.getCurrentTile()
@@ -56,7 +56,7 @@ function LevelEditor.onClick(x, y, button)
 end
 
 --[[
-@brief Scrolls the image, if existent, of the current grid cell 
+@brief Scrolls the image, if existent, of the current grid cell
 @param x,y mouse coordinates in pixels
 @param scrollOffset mouse wheel scroll units
 ]]
@@ -64,8 +64,8 @@ function LevelEditor.onMouseWheelMoved(x, y, scrollOffset)
     local column, row = level.grid:getTileIndices(x, y)
 
     local tile = level:getTile(column, row)
-    if tile == nil then 
-        return -- no tile to scroll image for 
+    if tile == nil then
+        return -- no tile to scroll image for
     end
 
     TileSelector.setCurrentTile(tile.sprite)

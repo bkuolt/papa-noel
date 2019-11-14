@@ -12,8 +12,8 @@ end
 
 function HashMap2D:add(x, y, value)
     assert(x and y, "invalid hash map keys")
-    
-    if value == nil then 
+
+    if value == nil then
         return
     end
 
@@ -70,7 +70,7 @@ local function nextValue(table, x, y)
 end
 
 function HashMap2D:iterator()
-    if self.values == nil then 
+    if self.values == nil then
         return function() return end
     end
 
@@ -78,7 +78,7 @@ function HashMap2D:iterator()
     current.x, current.y = nextValue(self.values, nil, nil)
 
     return function()
-        if current.x == nil and current.y == nil then 
+        if current.x == nil and current.y == nil then
             return
         end
 
