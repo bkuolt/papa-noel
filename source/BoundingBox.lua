@@ -120,7 +120,7 @@ function BoundingBox.createFromAnimation(animation)
         min.y = math.min(min.y, box.position.y)
     end
 
-    print(string.format("Bounding box calculation %f seconds", love.timer.getTime() - timestamp))
+    -- print(string.format("Bounding box calculation %f seconds", love.timer.getTime() - timestamp))
     return newBoundingBox(min.x, min.y,
                           max.x - min.x, max.y - min.y)
 end

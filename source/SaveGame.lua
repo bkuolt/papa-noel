@@ -44,7 +44,7 @@ function SaveLevel(level)
 end
 
 function LoadLevel()
-    print(GridFile)
+    -- print(GridFile)
     local file = io.open(GridFile, "r")
     assert(file, "no world exists to load");
 
@@ -75,7 +75,7 @@ function LoadLevel()
     -- read all saved tiles
     local tileCount = 0
     for line in file:lines() do -- file:read("*l") und string.gmatch
-        print(line)
+        -- print(line)
         -- read tile coordinates
         local x = file:read("*number")
         if x == nil then
@@ -117,9 +117,9 @@ function LoadLevel()
     level:setItem(2,3, Resources.animations.items[3])
     level:setItem(3,3, Resources.animations.items[3])
     level:setItem(4,3, Resources.animations.items[3])
-    -- HOW TO HARCODE
+    -- HOW TO HARDCODE
 
-    print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
+    -- print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
 
     -- Set character
     level:setCharacter(-12,4)

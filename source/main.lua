@@ -87,7 +87,6 @@ function love.load()
     fonts.pauseScreen = love.graphics.newFont("assets/SF Atarian System Bold.ttf", 100)
     fonts.statistics = love.graphics.newFont("assets/SF Atarian System Bold.ttf", 30)
     -- TODO: loadResources()
-    print("done with loading");
 
     if not LoadLevel() then
         print("could not load level")

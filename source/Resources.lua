@@ -36,7 +36,7 @@ local function LoadTileImages(path)
         images[#images + 1] = love.graphics.newImage(path .. file)
     end
 
-    print("Loaded " ..#images.. " tiles")
+    -- print("Loaded " ..#images.. " tiles")
     return images
 end
 

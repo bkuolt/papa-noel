@@ -21,7 +21,7 @@ function createGrid(columns, rows)
 
     grid.scrollOffset = { x = 0, y = 0 }
 
-    print("Created " ..rows.. "x" ..columns.. " grid")
+    -- print("Created " ..rows.. "x" ..columns.. " grid")
     return grid
 end
 
