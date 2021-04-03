@@ -28,10 +28,3 @@ jobs:
 
       - name: Installation Test
         run: ./install.sh
-
-      # Runs a set of commands using the runners shell
-      - name: Run the game for 5 seconds.
-        if: ${{ always() }}
-        run:
-          #./papa-noel
-       
