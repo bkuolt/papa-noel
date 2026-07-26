@@ -25,7 +25,7 @@ function createLevel(rows, columns)
     }
     setmetatable(level, { __index = Level })
 
-    level.tileWidth, level.tileHeight = level.grid:getTileDimensions() -- Refactor
+    level.tileWidth, level.tileHeight = level.grid:getTileDimensions()
     return level
 end
 
@@ -57,7 +57,7 @@ function Level:getTile(column, row)
 end
 
 function Level:removeTile(column, row)
-    return self.tiles:removeTile(column, row)
+    return self.tiles:remove(column, row)
 end
 
 function Level:setBackground(image)
@@ -65,7 +65,6 @@ function Level:setBackground(image)
 end
 
 function Level:setCharacter(column, row)
-    -- local width, height = level.grid:getTileDimensions()
     self.character = newCharacter(
         -1500, 315,
         450, 400, -- width, height
@@ -74,15 +73,16 @@ function Level:setCharacter(column, row)
 
     self.character:calculateBoundingBox()
 
-    -- TODO: This is not robust!
     local tile = self.tiles:get(column, row + 1)
-    local x = tile.boundingBox.position.x
-    local y = tile.boundingBox.position.y
+    if tile and tile.boundingBox then
+        local x = tile.boundingBox.position.x
+        local y = tile.boundingBox.position.y
 
-    self.character:setPosition(x, y)
+        self.character:setPosition(x, y)
 
-    local _, height = self.character:getDimensions()
-    self.character:translate(0, -height)
+        local _, height = self.character:getDimensions()
+        self.character:translate(0, -height)
+    end
 end
 
 --[[
@@ -114,7 +114,9 @@ function Level:pause()
     for item in self.items:iterator() do
         item:pause()
     end
-    self.character:pause()
+    if self.character then
+        self.character:pause()
+    end
 end
 
 function Level:unpause()
@@ -122,7 +124,9 @@ function Level:unpause()
     for item in self.items:iterator() do
         item:unpause()
     end
-    self.character:unpause()
+    if self.character then
+        self.character:unpause()
+    end
 end
 
 function Level:isPaused()
@@ -139,6 +143,10 @@ function Level:update(delta)
 end
 
 function Level:drawBackground()
+    if not self.background then
+        return
+    end
+
     local screenWidth, screenHeight = love.graphics.getDimensions()
     local imageWidth, imageHeight = self.background:getDimensions()
 
@@ -179,7 +187,9 @@ function Level:draw()
 
         self:drawTiles()
         self:drawItems()
-        self.character:draw()
+        if self.character then
+            self.character:draw()
+        end
 
     love.graphics.pop()
 end

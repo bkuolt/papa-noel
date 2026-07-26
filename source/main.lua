@@ -76,7 +76,7 @@ local function showLoadScreen()
     love.graphics.clear()
     love.graphics.push("all")
         love.graphics.setFont(fonts.loadScreen)
-        love.graphics.setColor(1.0, 1.0, 1.0)
+        love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
         love.graphics.print("Loading...")
     love.graphics.pop()
     love.graphics.present()
@@ -87,12 +87,11 @@ function love.load()
     require("Resources")
     fonts.pauseScreen = love.graphics.newFont("assets/SF Atarian System Bold.ttf", 100)
     fonts.statistics = love.graphics.newFont("assets/SF Atarian System Bold.ttf", 30)
-    -- TODO: loadResources()
 
     if not LoadLevel() then
-        print("could not load level")
-        love.window.showMessageBox("error", "could not load level", "error")
-        exit()
+        print("Error: Failed to load level data.")
+        love.window.showMessageBox("Error", "Could not load level data.", "error")
+        love.event.quit()
     end
 
     level:start()
@@ -118,7 +117,7 @@ function love.update(delta)
         scrollOffset.y = -config.ScrollSpeed * delta
     end
 
-    -- TODO: Update mouse cursor when moving
+    -- TODO: Update mouse cursor when dragging viewport
     level:scroll(scrollOffset.x, scrollOffset.y)
 end
 
@@ -141,7 +140,7 @@ local function printStatistics()
     )
 
     love.graphics.push("all")
-        love.graphics.setColor(255, 255, 255, 255)
+        love.graphics.setColor(1.0, 1.0, 1.0, 1.0)
         love.graphics.setFont(fonts.statistics)
         love.graphics.print(text, 10, 0)
     love.graphics.pop()
@@ -149,7 +148,7 @@ end
 
 local function showPauseScreen()
     love.graphics.push("all")
-        love.graphics.setColor(255, 0, 0, 255)
+        love.graphics.setColor(1.0, 0.0, 0.0, 1.0)
         love.graphics.setFont(fonts.pauseScreen)
         local screenWidth, screenHeight = love.graphics.getDimensions()
         love.graphics.print("Paused", screenWidth - 250, screenHeight - 100)

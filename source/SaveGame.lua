@@ -28,7 +28,7 @@ Saving and Restoring World State
 local GridFile = love.filesystem.getSourceBaseDirectory() .. "/world.data"
 
 function SaveLevel(level)
-    assert(level ~= nil, "No level to save")
+    assert(level ~= nil, "No level instance available to save")
     local file = io.open(GridFile, "w+")
 
     file:write(string.format("%d\n", 3))                                        -- Write version
@@ -44,13 +44,13 @@ function SaveLevel(level)
     -- TODO: Write items
 
     file:close()
-    print("Saved level")
+    print("Level saved successfully.")
 end
 
 function LoadLevel()
     -- print(GridFile)
     local file = io.open(GridFile, "r")
-    assert(file, "no world exists to load")
+    assert(file, "No world save file found to load")
 
     local version = file:read("*number") -- Read version
     local rows = file:read("*number")    -- Read grid size
@@ -77,8 +77,7 @@ function LoadLevel()
 
     -- Read all saved tiles
     local tileCount = 0
-    for line in file:lines() do -- file:read("*l") and string.gmatch
-        -- print(line)
+    for line in file:lines() do
         -- Read tile coordinates
         local x = file:read("*number")
         if x == nil then
@@ -97,10 +96,9 @@ function LoadLevel()
     level:scroll(scrollOffset.x, scrollOffset.y)
 
     file:close()
-    -- TODO: Also save items
-    -- print(string.match("Item 5 5", "Item %d %d"))
+    -- TODO: Implement item persistence
 
-    -- Set items
+    -- Hardcoded initial item setup
     level:setItem(-7, 3, Resources.animations.items[1])
     level:setItem(-6, 3, Resources.animations.items[1])
     level:setItem(-5, 3, Resources.animations.items[1])
@@ -120,11 +118,10 @@ function LoadLevel()
     level:setItem( 2, 3, Resources.animations.items[3])
     level:setItem( 3, 3, Resources.animations.items[3])
     level:setItem( 4, 3, Resources.animations.items[3])
-    -- Hardcoded item setups
 
     -- print(string.format("Restored %d tiles from %dx%d world", tileCount, rows, columns))
 
-    -- Set character
+    -- Set character initial position
     level:setCharacter(-12, 4)
 
     return true

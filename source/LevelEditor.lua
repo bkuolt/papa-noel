@@ -8,22 +8,26 @@ local TileSelector = {
 }
 
 function TileSelector.setCurrentTile(sprite)
-    assert(sprite, "invalid sprite")
-    TileSelector.currentSpriteIndex = Resources.tileMap:getIndex(sprite)
+    assert(sprite, "Invalid sprite object")
+    local index = Resources.tileMap:getIndex(sprite)
+    if index then
+        TileSelector.currentSpriteIndex = index
+    end
 end
 
 function TileSelector.getCurrentTile()
-    return tileMap:getSprite(TileSelector.currentSpriteIndex)
+    return Resources.tileMap:getSprite(TileSelector.currentSpriteIndex)
 end
 
-function TileSelector.scroll(tile, scrollOffset) -- TODO: something is broken
-    assert(tile, "invalid tile")
-    assert(scrollOffset, "invalid tile")
+function TileSelector.scroll(tile, scrollOffset)
+    assert(tile, "Invalid tile object")
+    assert(scrollOffset, "Invalid scroll offset")
 
-    TileSelector.currentSpriteIndex = (TileSelector.currentSpriteIndex + math.abs(scrollOffset)) % Resources.tileMap:getSpriteCount()
-    TileSelector.currentSpriteIndex = math.max(1, TileSelector.currentSpriteIndex)
-
-    tile.sprite = TileSelector.getCurrentTile()
+    local spriteCount = Resources.tileMap:getSpriteCount()
+    if spriteCount > 0 then
+        TileSelector.currentSpriteIndex = (TileSelector.currentSpriteIndex - 1 + scrollOffset) % spriteCount + 1
+        tile.animation = TileSelector.getCurrentTile()
+    end
 end
 
 --[[
@@ -35,8 +39,8 @@ local LevelEditor = {}
 
 --[[
 @brief Creates a new tile on the clicked cell in the grid or scrolls the current tile image
-@param x,y mouse coordinates in pixels
-@param button currently pressed mouse button (Love2D values)
+@param x,y Mouse coordinates in pixels
+@param button Currently pressed mouse button (Love2D values)
 ]]
 function LevelEditor.onClick(x, y, button)
     local column, row = level.grid:getTileIndices(x, y)
@@ -46,7 +50,7 @@ function LevelEditor.onClick(x, y, button)
         if tile == nil then
             level:setTile(column, row, TileSelector.getCurrentTile())
         else
-            TileSelector.setCurrentTile(tile.sprite)
+            TileSelector.setCurrentTile(tile.animation)
             TileSelector.scroll(tile, 1)
         end
 
@@ -59,8 +63,8 @@ end
 
 --[[
 @brief Scrolls the image, if existent, of the current grid cell
-@param x,y mouse coordinates in pixels
-@param scrollOffset mouse wheel scroll units
+@param x,y Mouse coordinates in pixels
+@param scrollOffset Mouse wheel scroll units
 ]]
 function LevelEditor.onMouseWheelMoved(x, y, scrollOffset)
     local column, row = level.grid:getTileIndices(x, y)
@@ -70,12 +74,12 @@ function LevelEditor.onMouseWheelMoved(x, y, scrollOffset)
         return -- No tile to scroll image for
     end
 
-    TileSelector.setCurrentTile(tile.sprite)
+    TileSelector.setCurrentTile(tile.animation)
     TileSelector.scroll(tile, scrollOffset)
 end
 
 function LevelEditor.onMouseMove(x, y, dx, dy)
-    if love.mouse.isDown(2) then -- Mouse button pressed and mouse moved
+    if love.mouse.isDown(2) then -- Right mouse button pressed and mouse moved
         level:scroll(dx, dy)
         love.mouse.setCursor(love.mouse.getSystemCursor("crosshair"))
     else

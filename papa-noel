@@ -1,4 +1,3 @@
 #!/bin/bash
-VERSION=11.3
-cd source
+cd "$(dirname "$0")/source"
 love .

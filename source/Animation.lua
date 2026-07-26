@@ -28,7 +28,9 @@ function newAnimation(spritesheet, fps)
     local animation = {
         running = false,
         paused = false,
-        duration = 0
+        flipped = false,
+        duration = 0,
+        lastTimestamp = 0
     }
 
     local metaTable = { __index = Animation }
@@ -55,7 +57,6 @@ end
 function Animation:play()
     self.running = true
     self.paused = false
-
     self.duration = 0
     self.lastTimestamp = love.timer.getTime()
 end
@@ -96,17 +97,26 @@ function Animation:flip()
 end
 
 --[[
-@return index of the current frame, index of the following frame, and the tween factor
+@return Current frame sprite, next frame sprite, and interpolation tween factor
 ]]
 function Animation:getCurrentFrames()
     if not self.paused then
-        self.duration = self.duration + (love.timer.getTime() - self.lastTimestamp)
-        self.lastTimestamp = love.timer.getTime()
+        local now = love.timer.getTime()
+        if self.lastTimestamp == 0 then
+            self.lastTimestamp = now
+        end
+        self.duration = self.duration + (now - self.lastTimestamp)
+        self.lastTimestamp = now
     end
 
     local currentFrameIndex, tweenFactor = math.modf(self.duration * self.fps)
-    currentFrameIndex = currentFrameIndex % #self.frames
-    local nextFrameIndex = (currentFrameIndex + 1) % #self.frames
+    local frameCount = #self.frames
+    if frameCount == 0 then
+        return nil, nil, 0
+    end
+
+    currentFrameIndex = currentFrameIndex % frameCount
+    local nextFrameIndex = (currentFrameIndex + 1) % frameCount
 
     return self.frames[1 + currentFrameIndex], self.frames[1 + nextFrameIndex], tweenFactor
 end
@@ -117,6 +127,9 @@ function Animation:draw(x, y, width, height)
     end
 
     local currentFrame, nextFrame, tweenFactor = self:getCurrentFrames()
+    if not currentFrame or not nextFrame then
+        return
+    end
 
     love.graphics.push("all")
         love.graphics.setShader(animationShader)

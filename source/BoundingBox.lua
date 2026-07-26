@@ -6,21 +6,27 @@ BoundingBox
 local BoundingBox = {}
 
 function newBoundingBox(x, y, width, height)
-    local boundingBox = {}
+    local boundingBox = {
+        position = {
+            x = x or 0,
+            y = y or 0
+        },
+        width = width or 0,
+        height = height or 0
+    }
     setmetatable(boundingBox, { __index = BoundingBox })
-
-    boundingBox.position = {}
-    boundingBox.position.x = x
-    boundingBox.position.y = y
-
-    boundingBox.width = width
-    boundingBox.height = height
-
     return boundingBox
 end
 
-function BoundingBox:doesCollide(boundingBox)
-    return false -- TODO
+function BoundingBox:doesCollide(other)
+    if not other or not other.position then
+        return false
+    end
+
+    return self.position.x < other.position.x + other.width and
+           self.position.x + self.width > other.position.x and
+           self.position.y < other.position.y + other.height and
+           self.position.y + self.height > other.position.y
 end
 
 function BoundingBox:getDimensions()
@@ -41,12 +47,12 @@ Helper
 ----------------------------------------------------
 ]]
 local function isEmptyPixel(sprite, x, y)
-    local r, g, b, a = sprite:getPixel(x, y)
+    local _, _, _, a = sprite:getPixel(x, y)
     return a == 0 -- Alpha channel check
 end
 
 local function isEmptyColumn(sprite, x)
-    local width, height = sprite:getDimensions()
+    local _, height = sprite:getDimensions()
 
     for y = 0, height - 1 do
         if not isEmptyPixel(sprite, x, y) then
@@ -57,7 +63,7 @@ local function isEmptyColumn(sprite, x)
 end
 
 local function isEmptyRow(sprite, y)
-    local width, height = sprite:getDimensions()
+    local width, _ = sprite:getDimensions()
 
     for x = 0, width - 1 do
         if not isEmptyPixel(sprite, x, y) then
@@ -85,7 +91,7 @@ local function calculateOffsets(sprite)
         min.y = min.y + 1
     end
 
-    while max.y > min.x and isEmptyRow(sprite, max.y) do
+    while max.y > min.y and isEmptyRow(sprite, max.y) do
         max.y = max.y - 1
     end
 
@@ -97,24 +103,24 @@ function BoundingBox.createFromSprite(sprite)
 
     return newBoundingBox(
         min.x, min.y,
-        max.x - min.x, max.y - min.y
+        math.max(0, max.x - min.x),
+        math.max(0, max.y - min.y)
     )
 end
 
 function BoundingBox.createFromAnimation(animation)
     local boundingBoxes = {}
-    local timestamp = love.timer.getTime()
 
     -- Calculate bounding box for each frame
     for _, frame in pairs(animation:getFrames()) do
         table.insert(boundingBoxes, BoundingBox.createFromSprite(frame))
     end
 
-    -- Calculate the bounding box so that each frame bounding box is contained
+    -- Calculate bounding box containing all frames
     local max = { x = 0, y = 0 }
     local min = { x = math.huge, y = math.huge }
 
-    for _, box in pairs(boundingBoxes) do
+    for _, box in ipairs(boundingBoxes) do
         max.x = math.max(max.x, box.position.x + box.width)
         max.y = math.max(max.y, box.position.y + box.height)
 
@@ -122,10 +128,10 @@ function BoundingBox.createFromAnimation(animation)
         min.y = math.min(min.y, box.position.y)
     end
 
-    -- print(string.format("Bounding box calculation %f seconds", love.timer.getTime() - timestamp))
     return newBoundingBox(
         min.x, min.y,
-        max.x - min.x, max.y - min.y
+        math.max(0, max.x - min.x),
+        math.max(0, max.y - min.y)
     )
 end
 

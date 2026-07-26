@@ -15,14 +15,11 @@ function newCharacter(x, y, width, height, animation)
 end
 
 function Character:startWalking()
-    self.setAnimation("Walk")
-    -- TODO: Implement movement
+    self:setAnimation("Walk")
+    -- TODO: Implement movement physics
 end
 
 function Character:stopWalking()
-    self.setAnimation("Idle")
-    -- TODO: Stop movement
+    self:setAnimation("Idle")
+    -- TODO: Stop movement physics
 end
-
--- Support multiple animations per game object
--- Add walking

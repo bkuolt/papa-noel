@@ -11,7 +11,8 @@ local function LoadAnimation(name, fps, filenameFunction)
 
     while true do
         local filename = filenameFunction(name, index)
-        if not love.filesystem.exists(filename) then
+        local info = love.filesystem.getInfo(filename)
+        if not info then
             break
         end
         images[index] = love.graphics.newImage(filename)
@@ -22,7 +23,8 @@ local function LoadAnimation(name, fps, filenameFunction)
 end
 
 local function LoadTileImages(path)
-    assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
+    local info = love.filesystem.getInfo(path)
+    assert(info and info.type == "directory", "invalid path: " .. tostring(path))
 
     -- Ensure trailing '/'
     if string.sub(path, -1) ~= "/" then
@@ -33,11 +35,10 @@ local function LoadTileImages(path)
     local files = love.filesystem.getDirectoryItems(path)
 
     local images = {}
-    for index, file in ipairs(files) do
+    for _, file in ipairs(files) do
         images[#images + 1] = love.graphics.newImage(path .. file)
     end
 
-    -- print("Loaded " .. #images .. " tiles")
     return images
 end
 
