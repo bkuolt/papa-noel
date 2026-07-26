@@ -5,7 +5,11 @@ require("Character")
 require("Tile")
 Resources = require("Resources")
 
-
+--[[
+----------------------------------------------------
+Level
+----------------------------------------------------
+]]
 local Level = {}
 
 function createLevel(rows, columns)
@@ -19,7 +23,7 @@ function createLevel(rows, columns)
         paused = false,
         particleSystem = createParticleSystem(2000, Resources.images.snowflake, 10)
     }
-    setmetatable(level, {__index = Level})
+    setmetatable(level, { __index = Level })
 
     level.tileWidth, level.tileHeight = level.grid:getTileDimensions() -- Refactor
     return level
@@ -27,24 +31,29 @@ end
 
 --[[
 ----------------------------------------------------
-Level content creation/retrieval
-----------------------------------------------------]]
+Level Content Creation & Retrieval
+----------------------------------------------------
+]]
 function Level:setItem(column, row, animation)
-    local item = newItem(self.tileWidth * column, self.tileHeight * row,
-                         self.tileWidth, self.tileHeight,
-                         animation)
+    local item = newItem(
+        self.tileWidth * column, self.tileHeight * row,
+        self.tileWidth, self.tileHeight,
+        animation
+    )
     self.items:add(column, row, item)
 end
 
 function Level:setTile(column, row, sprite)
-    local tile = newTile(self.tileWidth * column, self.tileHeight * row,
-                         self.tileWidth, self.tileHeight,
-                         sprite)
+    local tile = newTile(
+        self.tileWidth * column, self.tileHeight * row,
+        self.tileWidth, self.tileHeight,
+        sprite
+    )
     self.tiles:add(column, row, tile)
 end
 
 function Level:getTile(column, row)
-   return self.tiles:get(column, row)
+    return self.tiles:get(column, row)
 end
 
 function Level:removeTile(column, row)
@@ -56,28 +65,31 @@ function Level:setBackground(image)
 end
 
 function Level:setCharacter(column, row)
-    --  local width, height = level.grid:getTileDimensions()
-    self.character = newCharacter(-1500, 315,
-                                  450, 400,  -- width, height
-                                  Resources.animations.character["Idle"])
+    -- local width, height = level.grid:getTileDimensions()
+    self.character = newCharacter(
+        -1500, 315,
+        450, 400, -- width, height
+        Resources.animations.character["Idle"]
+    )
 
     self.character:calculateBoundingBox()
 
-    -- TODO: this is not robust!
+    -- TODO: This is not robust!
     local tile = self.tiles:get(column, row + 1)
     local x = tile.boundingBox.position.x
     local y = tile.boundingBox.position.y
 
-    self.character:setPosition(x,y)
+    self.character:setPosition(x, y)
 
     local _, height = self.character:getDimensions()
     self.character:translate(0, -height)
 end
 
 --[[
-------------------------------------------------
+----------------------------------------------------
 Scrolling
-------------------------------------------------]]
+----------------------------------------------------
+]]
 function Level:scroll(x, y)
     if self.grid:scroll(self.tiles, x, y) then
         self:scrollBackground(x / 2)
@@ -89,22 +101,27 @@ function Level:scrollBackground(x)
 end
 
 --[[
-------------------------------------------------
-State management
-------------------------------------------------]]
+----------------------------------------------------
+State Management
+----------------------------------------------------
+]]
 function Level:start()
-    -- nothing to do yet
+    -- Nothing to do yet
 end
 
 function Level:pause()
     self.paused = true
-    for item in self.items:iterator() do item:pause() end
+    for item in self.items:iterator() do
+        item:pause()
+    end
     self.character:pause()
 end
 
 function Level:unpause()
     self.paused = false
-    for item in self.items:iterator() do item:unpause() end
+    for item in self.items:iterator() do
+        item:unpause()
+    end
     self.character:unpause()
 end
 
@@ -113,9 +130,10 @@ function Level:isPaused()
 end
 
 --[[
-------------------------------------------------
+----------------------------------------------------
 Rendering
-------------------------------------------------]]
+----------------------------------------------------
+]]
 function Level:update(delta)
     self.particleSystem:update(delta)
 end
@@ -126,9 +144,9 @@ function Level:drawBackground()
 
     love.graphics.push()
         local translation = self.backgroundScroll.x % screenWidth
-        love.graphics.draw(self.background,  translation, 0, 0,  screenWidth / imageWidth, screenHeight / imageHeight)
-        love.graphics.draw(self.background,  translation + screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
-        love.graphics.draw(self.background,  translation - screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+        love.graphics.draw(self.background, translation, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+        love.graphics.draw(self.background, translation + screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
+        love.graphics.draw(self.background, translation - screenWidth, 0, 0, screenWidth / imageWidth, screenHeight / imageHeight)
     love.graphics.pop()
 end
 
@@ -148,7 +166,7 @@ end
 
 function Level:drawItems()
     for item in self.items:iterator() do
-        item:draw();
+        item:draw()
     end
 end
 
@@ -157,7 +175,7 @@ function Level:draw()
     self:drawSnow()
 
     love.graphics.push("all")
-        love.graphics.translate(self.grid.scrollOffset.x , self.grid.scrollOffset.y )
+        love.graphics.translate(self.grid.scrollOffset.x, self.grid.scrollOffset.y)
 
         self:drawTiles()
         self:drawItems()

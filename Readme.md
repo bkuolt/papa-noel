@@ -1,27 +1,33 @@
 [![CI](https://github.com/bkuolt/papa-noel/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/bkuolt/papa-noel/actions/workflows/test.yml)
-## About
-*Papá Noel* - Spanish for Santa Claus- is a prototype of a simple 2D platform game.
 
+## About
+*Papá Noel* (Spanish for Santa Claus) is a prototype of a simple 2D platformer game built using LÖVE2D.
 
 ![Screenshot](screenshot.png)
 
-# Installation
-Download the source code and install [LÖVE]([Löve2D](https://love2d.org)):
-``` bash
+## Installation
+
+Download the source code and install [LÖVE2D](https://love2d.org):
+
+```bash
 git clone https://github.com/bkuolt/papa-noel.git
 cd papa-noel
-./install.sh
+task install-deps
 ```
 
-# Play
-``` bash
-./papa-noel
-```
+*Alternatively, run `./install.sh` directly.*
 
-# Controls
-|Key|Function|
-|-|-|
-|Esc| Exit game|
-|P  | Pause/Resume game |
-|B  | Show/hide bounding boxes|
-|Space| Enable/Disable level editor mode|
+## Controls & Usage
+
+Run the game via Taskfile:
+```bash
+task run
+```
+*Alternatively, run `./papa-noel` directly.*
+
+| Key | Function |
+| --- | --- |
+| `Esc` | Exit game |
+| `P` | Pause / resume game |
+| `B` | Show / hide bounding boxes |
+| `Space` | Enable / disable level editor mode |

@@ -1,24 +1,25 @@
 require("Sprite")
 
 --[[
---------------------------------------------------------
+----------------------------------------------------
 Animation
---------------------------------------------------------]]
+----------------------------------------------------
+]]
 local Animation = {}
 
 local animationShader = love.graphics.newShader([[
-        uniform sampler2D secondFrame;
-        uniform float tweenFactor;
+    uniform sampler2D secondFrame;
+    uniform float tweenFactor;
 
-        vec4 effect(vec4 color, Image firstFrame, vec2 textureCoords, vec2 screenCoords)
-        {
-            vec4 texels[2];
-            texels[0] = Texel(firstFrame, textureCoords);
-            texels[1] = Texel(secondFrame, textureCoords);
+    vec4 effect(vec4 color, Image firstFrame, vec2 textureCoords, vec2 screenCoords)
+    {
+        vec4 texels[2];
+        texels[0] = Texel(firstFrame, textureCoords);
+        texels[1] = Texel(secondFrame, textureCoords);
 
-            return texels[0] + (texels[1] - texels[0]) * tweenFactor;
-        }
-    ]])
+        return texels[0] + (texels[1] - texels[0]) * tweenFactor;
+    }
+]])
 
 function newAnimation(spritesheet, fps)
     assert(spritesheet, "invalid spritesheet")
@@ -30,7 +31,7 @@ function newAnimation(spritesheet, fps)
         duration = 0
     }
 
-    local metaTable = {__index = Animation }
+    local metaTable = { __index = Animation }
     setmetatable(animation, metaTable)
 
     animation.frames = animation:createFrames(spritesheet)
@@ -95,10 +96,10 @@ function Animation:flip()
 end
 
 --[[
-@return index of the current frame, index of the following frame and the tween factor
+@return index of the current frame, index of the following frame, and the tween factor
 ]]
 function Animation:getCurrentFrames()
-    if not self.paused then 
+    if not self.paused then
         self.duration = self.duration + (love.timer.getTime() - self.lastTimestamp)
         self.lastTimestamp = love.timer.getTime()
     end
@@ -112,7 +113,7 @@ end
 
 function Animation:draw(x, y, width, height)
     if not self.running then
-        return -- nothing to render
+        return -- Nothing to render
     end
 
     local currentFrame, nextFrame, tweenFactor = self:getCurrentFrames()
@@ -127,9 +128,10 @@ function Animation:draw(x, y, width, height)
 end
 
 --[[
---------------------------------------------------------
+----------------------------------------------------
 Helper
---------------------------------------------------------]]
+----------------------------------------------------
+]]
 function Animation.LoadAnimation(images, fps)
     local spriteSheet = newSpriteSheet(images)
     local animation = newAnimation(spriteSheet, fps)

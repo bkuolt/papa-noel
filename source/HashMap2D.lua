@@ -1,7 +1,8 @@
 --[[
 ----------------------------------------------------
 HashMap2D
-----------------------------------------------------]]
+----------------------------------------------------
+]]
 local HashMap2D = {}
 
 function newHashMap2D()
@@ -23,7 +24,7 @@ function HashMap2D:add(x, y, value)
 end
 
 function HashMap2D:remove(x, y)
-    if self:get(x,y) == nil then
+    if self:get(x, y) == nil then
         return
     end
 
@@ -49,7 +50,8 @@ end
 --[[
 ----------------------------------------------------
 HashMap2D Iterator
-----------------------------------------------------]]
+----------------------------------------------------
+]]
 local function nextValue(table, x, y)
     if y == nil then
         y = next(table, nil)
@@ -71,7 +73,7 @@ end
 
 function HashMap2D:iterator()
     if self.values == nil then
-        return function() return end
+        return function() end
     end
 
     local current = {}

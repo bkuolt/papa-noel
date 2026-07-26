@@ -3,7 +3,8 @@ Animation = require("Animation")
 --[[
 ----------------------------------------------------
 Resource Loading
-----------------------------------------------------]]
+----------------------------------------------------
+]]
 local function LoadAnimation(name, fps, filenameFunction)
     local images = {}
     local index = 1
@@ -23,12 +24,12 @@ end
 local function LoadTileImages(path)
     assert(love.filesystem.getInfo(path).type == "directory", "invalid path")
 
-    -- ensure trailing '/'
+    -- Ensure trailing '/'
     if string.sub(path, -1) ~= "/" then
         path = path .. "/"
     end
 
-    -- load all images from the specified path 
+    -- Load all images from the specified path
     local files = love.filesystem.getDirectoryItems(path)
 
     local images = {}
@@ -36,19 +37,21 @@ local function LoadTileImages(path)
         images[#images + 1] = love.graphics.newImage(path .. file)
     end
 
-    -- print("Loaded " ..#images.. " tiles")
+    -- print("Loaded " .. #images .. " tiles")
     return images
 end
 
 --[[
 ----------------------------------------------------
 Helper
-----------------------------------------------------]]
+----------------------------------------------------
+]]
 local function CreateItemFilename(path, index)
     local indexString
     if index < 10 then
-         indexString = string.format("000%d", index)
-    else indexString = string.format("00%d", index)
+        indexString = string.format("000%d", index)
+    else
+        indexString = string.format("00%d", index)
     end
 
     return string.format("%s/%s.png", path, indexString)
@@ -69,8 +72,9 @@ end
 --[[
 ----------------------------------------------------
 Resources
-----------------------------------------------------]]
-local Resources  ={}
+----------------------------------------------------
+]]
+local Resources = {}
 
 Resources.animations = {}
 

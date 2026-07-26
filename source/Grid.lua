@@ -1,33 +1,33 @@
 config = require("conf")
 require("HashMap2D")
-require("Item") -- Tile statt Item
-
+require("Item") -- Tile instead of Item
 
 --[[
 ----------------------------------------------------
- Grid
-----------------------------------------------------]]
+Grid
+----------------------------------------------------
+]]
 local Grid = {}
 
 function createGrid(columns, rows)
     assert(columns ~= nil and rows ~= nil and columns > 0 and rows > 0, "Invalid grid size")
 
     local grid = {}
-    setmetatable(grid, {__index = Grid})
+    setmetatable(grid, { __index = Grid })
 
-    grid.rows = rows       -- maximum number of rows in the grid on the screen 
-    grid.columns = columns -- maximum number of columns in the grid on the screen
+    grid.rows = rows       -- Maximum number of rows in the grid on the screen
+    grid.columns = columns -- Maximum number of columns in the grid on the screen
     grid.tiles = newHashMap2D()
 
     grid.scrollOffset = { x = 0, y = 0 }
 
-    -- print("Created " ..rows.. "x" ..columns.. " grid")
+    -- print("Created " .. rows .. "x" .. columns .. " grid")
     return grid
 end
 
 function Grid:getTileDimensions()
     local screenWidth, screenHeight = love.graphics.getDimensions()
-    return screenWidth / self.columns , screenHeight / self.rows
+    return screenWidth / self.columns, screenHeight / self.rows
 end
 
 function Grid:getTileIndices(x, y)
@@ -37,7 +37,7 @@ end
 
 function Grid:getLimits(tiles)
     local max = { x = -math.huge }
-    local min = { x =  math.huge }
+    local min = { x = math.huge }
 
     for tile, x, y in tiles:iterator() do
         max.x = math.max(max.x, x)
@@ -52,7 +52,7 @@ function Grid:scroll(tiles, x, y) -- TODO: perform horizontal checks
     self.scrollOffset.y = self.scrollOffset.y + y
 
     if config.mode == "Editor" then
-        return true -- no need for checks in Editor mode
+        return true -- No need for checks in Editor mode
     end
 
     local firstTileIndex, lastTileIndex = self:getLimits(tiles)
@@ -68,7 +68,7 @@ function Grid:scroll(tiles, x, y) -- TODO: perform horizontal checks
            | Screen | World |
            =========x--------
         ]]
-        if -self.scrollOffset.x <= firstTilePosition then 
+        if -self.scrollOffset.x <= firstTilePosition then
             self.scrollOffset.x = -firstTilePosition
             return false
         end
@@ -79,7 +79,7 @@ function Grid:scroll(tiles, x, y) -- TODO: perform horizontal checks
            --------x=========
         ]]
         if -self.scrollOffset.x + screenWidth >= lastTilePosition then
-            self.scrollOffset.x = - (lastTilePosition - screenWidth)
+            self.scrollOffset.x = -(lastTilePosition - screenWidth)
             return false
         end
     end

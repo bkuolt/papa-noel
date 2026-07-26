@@ -1,12 +1,13 @@
 --[[
---------------------------------------------------------
+----------------------------------------------------
 Sprite
---------------------------------------------------------]]
+----------------------------------------------------
+]]
 local Sprite = {}
 
 function newSprite(spriteSheet, quad)
     local sprite = {}
-    setmetatable(sprite, {__index = Sprite })
+    setmetatable(sprite, { __index = Sprite })
 
     local viewport = {}
     viewport.x, viewport.y, viewport.width, viewport.height = quad:getViewport()
@@ -23,7 +24,7 @@ function Sprite:getTexture()
 end
 
 function Sprite:getPixel(x, y)
-    assert(x >= 0 and x < self.viewport.width and y >= 0 and y < self.viewport.height, "coordinates are out of bounce")
+    assert(x >= 0 and x < self.viewport.width and y >= 0 and y < self.viewport.height, "coordinates are out of bounds")
     return self.spriteSheet.imageData:getPixel(self.viewport.x + x, self.viewport.y + y)
 end
 
@@ -35,23 +36,26 @@ function Sprite:draw(x, y, width, height)
     assert(x and y, "invalid draw position")
     assert(width and height and width > 0 and height > 0, "invalid draw size")
 
-    local scale = { x = width / self.viewport.width,
-                    y = height / self.viewport.height }
+    local scale = {
+        x = width / self.viewport.width,
+        y = height / self.viewport.height
+    }
 
     love.graphics.draw(self.spriteSheet.canvas, self.quad, x, y, 0, scale.x, scale.y)
 end
 
 --[[
---------------------------------------------------------
+----------------------------------------------------
 SpriteSheet
---------------------------------------------------------]]
+----------------------------------------------------
+]]
 local SpriteSheet = {}
 
 function newSpriteSheet(images)
     assert(images, "invalid table")
 
     local spriteSheet = {}
-    setmetatable(spriteSheet, {__index = SpriteSheet})
+    setmetatable(spriteSheet, { __index = SpriteSheet })
 
     spriteSheet.cellWidth, spriteSheet.cellHeight = images[1]:getDimensions()
     spriteSheet.columns, spriteSheet.rows = spriteSheet:calculateGridSize(#images, spriteSheet.cellWidth, spriteSheet.cellHeight)
@@ -73,8 +77,8 @@ function SpriteSheet:calculateGridSize(imageCount, imageWidth, imageHeight)
 
     assert(imageCount < maxRowCount * maxColumnCount, "this system does not support large enough textures to create the spritesheet")
 
-    return math.min(maxColumnCount, imageCount),  -- column count
-           math.ceil(imageCount / maxColumnCount) -- row count
+    return math.min(maxColumnCount, imageCount),  -- Column count
+           math.ceil(imageCount / maxColumnCount) -- Row count
 end
 
 function SpriteSheet:drawToCanvas(images)
@@ -86,8 +90,14 @@ function SpriteSheet:drawToCanvas(images)
         column, row = self:getIndices(i - 1)
 
         local imageWidth, imageHeight = images[i]:getDimensions()
-        love.graphics.draw(images[i], column * self.cellWidth, row * self.cellHeight, 0,
-                           self.cellWidth / imageWidth, self.cellHeight / imageHeight --[[ assures that all images have the same dimensions --]])
+        love.graphics.draw(
+            images[i],
+            column * self.cellWidth,
+            row * self.cellHeight,
+            0,
+            self.cellWidth / imageWidth,
+            self.cellHeight / imageHeight -- Ensures all images have uniform dimensions
+        )
     end
 
     love.graphics.setCanvas()

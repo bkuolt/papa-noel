@@ -1,5 +1,4 @@
 #!/bin/bash
-VERSION=11.3ppa1
-sudo add-apt-repository ppa:bartbes/love-stable
+sudo add-apt-repository --remove -y ppa:bartbes/love-stable || true
 sudo apt-get update
-sudo apt-get install love=$VERSION
+sudo apt-get install -y love

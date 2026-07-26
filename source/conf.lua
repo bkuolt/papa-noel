@@ -4,8 +4,8 @@ function love.conf(t)
 end
 
 local config = {
-    ShowGrid = true,   -- show grid on/off
-    ScrollSpeed = 500, -- in pixels/s
+    ShowGrid = true,   -- Show grid on/off
+    ScrollSpeed = 500, -- In pixels/s
     mode = "Game",
     ShowBoundingBoxes = false
 }

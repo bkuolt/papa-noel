@@ -1,8 +1,13 @@
+--[[
+----------------------------------------------------
+ParticleSystem
+----------------------------------------------------
+]]
 local ParticleSystem = {}
 
 function createParticleSystem(particleCount, image, particleSize)
     local particleSystem = {}
-    setmetatable(particleSystem, {__index = ParticleSystem})
+    setmetatable(particleSystem, { __index = ParticleSystem })
 
     particleSystem.image = image
     particleSystem.particleSize = particleSize
@@ -27,12 +32,12 @@ function ParticleSystem:createParticle(existingParticle)
         particle.y = math.random(0, love.graphics.getHeight())
     end
 
-    particle.gravity = math.random(100,300) -- TODO
+    particle.gravity = math.random(100, 300) -- TODO
     return particle
 end
 
 function ParticleSystem:update(delta)
-    for _, particle in pairs(self.particles) do 
+    for _, particle in pairs(self.particles) do
         particle.y = particle.y + particle.gravity * delta
         particle.x = particle.x + math.random(-50, 50) * delta
 
@@ -48,8 +53,8 @@ function ParticleSystem:draw()
         y = self.particleSize / self.image:getHeight()
     }
 
-    love.graphics.setColor(255,255,255)
-    for _, particle in pairs(self.particles) do 
+    love.graphics.setColor(255, 255, 255)
+    for _, particle in pairs(self.particles) do
         love.graphics.draw(self.image, particle.x, particle.y, 0, scale.x, scale.y)
     end
     -- TODO

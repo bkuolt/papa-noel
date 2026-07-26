@@ -1,0 +1,31 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task: run
+
+  run:
+    desc: Run Papá Noel 2D platformer game
+    dir: source
+    cmds:
+      - love .
+
+  install-deps:
+    desc: Install LÖVE2D game engine dependencies
+    cmds:
+      - sudo add-apt-repository --remove -y ppa:bartbes/love-stable || true
+      - sudo apt-get update
+      - sudo apt-get install -y love
+
+  install:
+    desc: Install application binaries
+    cmds:
+      - echo "Installing papa-noel..."
+      # TODO: Copy directory to /opt/papa-noel and create symlink in /usr/bin
+
+  uninstall:
+    desc: Uninstall application binaries
+    cmds:
+      - echo "Uninstalling papa-noel..."
+      # TODO: Remove from /opt/papa-noel and remove symlink in /usr/bin
